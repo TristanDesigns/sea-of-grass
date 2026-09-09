@@ -1,0 +1,287 @@
+<meta charset="utf-8" />
+<title>Scrollwork</title>
+<meta name="description" content="A generative radial pattern, built from nested SVG primitives, that reshapes continuously as you scroll." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --paper:#faf9f6;
+    --ink:#141311;
+    --line:#d9d6cf;
+    --ink-soft:rgba(20,19,17,.5);
+  }
+
+  *{box-sizing:border-box;}
+  html{background:var(--paper);}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
+    overflow-x:hidden;
+  }
+
+  /* Tall scroll track that gives the scrubber room to run. */
+  .track{
+    position:relative;
+    height:700vh;
+  }
+
+  .stage{
+    position:sticky;
+    top:0;
+    height:100vh;
+    width:100%;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .stage svg{
+    width:min(86vw,86vh);
+    height:min(86vw,86vh);
+    overflow:visible;
+  }
+
+  .ring rect{
+    fill:none;
+    stroke:var(--ink);
+    vector-effect:non-scaling-stroke;
+  }
+
+  .intro{
+    position:fixed;
+    top:28px;
+    left:0;
+    right:0;
+    text-align:center;
+    pointer-events:none;
+    z-index:5;
+  }
+  .intro .name{
+    font-size:13px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    margin:0 0 6px;
+  }
+  .intro .hint{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin:0;
+  }
+
+  .readout{
+    position:fixed;
+    left:24px;
+    bottom:22px;
+    font-size:12px;
+    line-height:1.7;
+    color:var(--ink-soft);
+    z-index:5;
+    font-variant-numeric:tabular-nums;
+  }
+  .readout span{color:var(--ink);}
+
+  .credit{
+    position:fixed;
+    right:24px;
+    bottom:22px;
+    font-size:12px;
+    line-height:1.7;
+    color:var(--ink-soft);
+    z-index:5;
+    text-align:right;
+  }
+  .credit a{
+    color:var(--ink-soft);
+    text-decoration:none;
+    border-bottom:1px solid var(--line);
+  }
+  .credit a:hover{color:var(--ink);}
+
+  .progress{
+    position:fixed;
+    left:0;
+    top:0;
+    height:2px;
+    background:var(--ink);
+    z-index:6;
+    width:0%;
+  }
+
+  @media (max-width:640px){
+    .intro{top:20px;}
+    .readout,.credit{font-size:11px;}
+    .readout{left:16px;bottom:16px;}
+    .credit{right:16px;bottom:16px;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .track{height:340vh;}
+  }
+</style>
+
+<div class="progress" id="progress"></div>
+
+<div class="intro" id="intro">
+  <p class="name">Scrollwork</p>
+  <p class="hint">scroll to reshape ↓</p>
+</div>
+
+<div class="track">
+  <div class="stage">
+    <svg id="svg" viewBox="-220 -220 440 440" role="img" aria-label="A generative radial pattern that changes shape as the page scrolls">
+      <g class="ring" id="ringOuter"></g>
+      <g class="ring" id="ringMid"></g>
+      <g class="ring" id="ringInner"></g>
+    </svg>
+  </div>
+</div>
+
+<div class="readout" id="readout">
+  n <span id="rN">00</span>&nbsp;&nbsp;⟳ <span id="rA">000°</span>&nbsp;&nbsp;◧ <span id="rR">0.00</span>
+</div>
+<div class="credit">
+  technique adapted from<br>
+  <a href="https://github.com/ndrwhr/svg-animation-src" target="_blank" rel="noopener">ndrwhr/svg-animation-src</a>
+</div>
+
+<script>
+(function(){
+  var N = 16;
+  var TAU = Math.PI * 2;
+
+  function buildRing(id, count){
+    var g = document.getElementById(id);
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < count; i++){
+      var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('data-i', i);
+      frag.appendChild(rect);
+    }
+    g.appendChild(frag);
+    return g.querySelectorAll('rect');
+  }
+
+  var outerItems = buildRing('ringOuter', N);
+  var midItems = buildRing('ringMid', N);
+  var innerItems = buildRing('ringInner', Math.round(N / 2));
+
+  function lerp(a, b, t){ return a + (b - a) * t; }
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+  function smoothstep(edge0, edge1, x){
+    var t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
+    return t * t * (3 - 2 * t);
+  }
+  // Triangle wave 0..1..0 with given number of cycles over p in [0,1].
+  function triangle(p, cycles){
+    var x = (p * cycles) % 1;
+    return x < 0.5 ? x * 2 : 2 - x * 2;
+  }
+
+  function renderRing(items, opts){
+    var count = items.length;
+    var spacingCount = Math.max(1, opts.activeCount);
+    items.forEach(function(rect){
+      var i = +rect.getAttribute('data-i');
+      var angle = (i / spacingCount) * TAU + opts.angleOffset;
+      var cx = Math.cos(angle) * opts.radius;
+      var cy = Math.sin(angle) * opts.radius;
+
+      var visible = smoothstep(i - 1, i, opts.activeCount) - smoothstep(count - 1, count, i);
+      visible = clamp(visible, 0, 1);
+      if (i >= opts.activeCount + 1) visible = 0;
+
+      var size = opts.size * (0.6 + 0.4 * visible);
+      var rx = size * 0.5 * opts.roundness;
+      var selfRotate = opts.selfRotation + i * opts.stagger;
+
+      rect.setAttribute('x', -size / 2);
+      rect.setAttribute('y', -size / 2);
+      rect.setAttribute('width', size);
+      rect.setAttribute('height', size);
+      rect.setAttribute('rx', rx);
+      rect.setAttribute('stroke-width', opts.strokeWidth);
+      rect.style.opacity = visible;
+      rect.setAttribute(
+        'transform',
+        'translate(' + cx.toFixed(2) + ',' + cy.toFixed(2) + ') rotate(' + selfRotate.toFixed(2) + ')'
+      );
+    });
+  }
+
+  var progressEl = document.getElementById('progress');
+  var introEl = document.getElementById('intro');
+  var rN = document.getElementById('rN');
+  var rA = document.getElementById('rA');
+  var rR = document.getElementById('rR');
+  var track = document.querySelector('.track');
+
+  var ticking = false;
+
+  function update(){
+    ticking = false;
+
+    var scrollable = track.offsetHeight - window.innerHeight;
+    var p = scrollable > 0 ? window.scrollY / scrollable : 0;
+    p = clamp(p, 0, 1);
+
+    progressEl.style.width = (p * 100).toFixed(2) + '%';
+    introEl.style.opacity = clamp(1 - p * 9, 0, 1);
+
+    var activeCountOuter = lerp(3, N, p);
+    var outerAngle = p * 260;
+    var roundness = triangle(p, 3.5);
+
+    renderRing(outerItems, {
+      radius: lerp(70, 165, p),
+      size: lerp(30, 20, p),
+      roundness: roundness,
+      angleOffset: (outerAngle * Math.PI) / 180,
+      selfRotation: -p * 900,
+      stagger: 360 / N,
+      strokeWidth: lerp(1.4, 0.6, p),
+      activeCount: activeCountOuter
+    });
+
+    renderRing(midItems, {
+      radius: lerp(70, 165, p) * 0.62,
+      size: lerp(30, 20, p) * 0.64,
+      roundness: 1 - roundness,
+      angleOffset: (-outerAngle * 1.4 * Math.PI) / 180,
+      selfRotation: p * 900 * 1.3,
+      stagger: 360 / N,
+      strokeWidth: lerp(1.1, 0.45, p),
+      activeCount: lerp(0.5, N, smoothstep(0.12, 0.85, p))
+    });
+
+    var innerCount = innerItems.length;
+    renderRing(innerItems, {
+      radius: lerp(24, 46, triangle(p, 2)),
+      size: lerp(14, 9, p),
+      roundness: triangle(p + 0.25, 3.5),
+      angleOffset: (outerAngle * -2.2 * Math.PI) / 180,
+      selfRotation: -p * 1500,
+      stagger: 360 / innerCount,
+      strokeWidth: 1,
+      activeCount: lerp(0.5, innerCount, smoothstep(0.3, 0.9, p))
+    });
+
+    rN.textContent = String(Math.round(activeCountOuter)).padStart(2, '0');
+    rA.textContent = Math.round(((outerAngle % 360) + 360) % 360) + '°';
+    rR.textContent = roundness.toFixed(2);
+  }
+
+  function onScroll(){
+    if (!ticking){ ticking = true; requestAnimationFrame(update); }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  update();
+})();
+</script>
