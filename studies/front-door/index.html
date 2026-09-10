@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Front Door — Sea of Grass</title>
+<meta name="description" content="Study 02. tristan.design opens on a 16-mode generative visual synthesizer instead of a portfolio grid, and a choice made on the front door follows the visitor through every other page." />
+<link rel="canonical" href="https://seaofgrass.studio/studies/front-door/" />
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:site_name" content="Sea of Grass" />
+<meta property="og:url" content="https://seaofgrass.studio/studies/front-door/" />
+<meta property="og:title" content="Front Door — Sea of Grass" />
+<meta property="og:description" content="A portfolio front door that is also an instrument: sixteen generative modes, a wordmark with two million states, and site-wide state with no server." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+/* ============================================================
+   Study 02 — Front Door.
+   Site tokens unchanged: paper, ink, hairline, ink-soft.
+   One extension for prose studies: IBM Plex Sans sets running
+   text; Plex Mono keeps labels, data, code and tables.
+   ============================================================ */
+
+:root{
+  --paper:#faf9f6;
+  --ink:#141311;
+  --line:#d9d6cf;
+  --ink-soft:rgba(20,19,17,.5);
+  --cell:#ffffff;
+  --sans:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
+}
+
+*{box-sizing:border-box;}
+html{background:var(--paper);-webkit-text-size-adjust:100%;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+
+.wrap{max-width:52rem;margin:0 auto;padding:0 clamp(1.25rem,5vw,2rem);}
+
+a{color:inherit;text-underline-offset:3px;text-decoration-thickness:1px;}
+a:focus-visible{outline:1px solid var(--ink);outline-offset:4px;}
+
+/* ---------- the way home ---------- */
+
+.home{
+  display:inline-block;
+  width:30px;
+  color:var(--ink-soft);
+  transition:color .18s ease;
+  padding-top:clamp(2rem,6vh,3.25rem);
+}
+.home:hover,.home:focus-visible{color:var(--ink);}
+.home svg{display:block;width:100%;height:auto;}
+
+/* ---------- masthead ---------- */
+
+.top{
+  padding:2.25rem 0 2.5rem;
+  border-bottom:1px solid var(--line);
+}
+
+.kicker{
+  font-family:var(--mono);
+  font-size:11.5px;
+  font-weight:500;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  margin:0 0 1.25rem;
+}
+
+h1{
+  font-family:var(--sans);
+  font-size:clamp(28px,5.2vw,42px);
+  line-height:1.1;
+  letter-spacing:-.022em;
+  font-weight:600;
+  margin:0 0 1.1rem;
+  text-wrap:balance;
+}
+
+.standfirst{
+  font-size:17px;
+  line-height:1.6;
+  color:var(--ink-soft);
+  max-width:58ch;
+  margin:0;
+  text-wrap:pretty;
+}
+
+.meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.5rem 1.75rem;
+  margin-top:1.9rem;
+  font-family:var(--mono);
+  font-size:11.5px;
+  letter-spacing:.06em;
+  color:var(--ink-soft);
+}
+.meta b{font-weight:500;color:var(--ink);}
+
+/* ---------- sections ---------- */
+
+section{padding:3.25rem 0;border-bottom:1px solid var(--line);}
+section:last-of-type{border-bottom:0;}
+
+.num{
+  display:block;
+  font-family:var(--mono);
+  font-size:11.5px;
+  font-weight:500;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  margin-bottom:.75rem;
+}
+
+h2{
+  font-size:clamp(20px,3.3vw,26px);
+  line-height:1.22;
+  letter-spacing:-.018em;
+  font-weight:600;
+  margin:0 0 1rem;
+  text-wrap:balance;
+}
+
+h3{
+  font-size:15.5px;
+  line-height:1.4;
+  letter-spacing:-.006em;
+  font-weight:600;
+  margin:2.1rem 0 .6rem;
+}
+
+p{margin:0 0 1rem;max-width:64ch;text-wrap:pretty;}
+p.lead{font-size:16.5px;color:var(--ink-soft);}
+ul{margin:0 0 1rem;padding-left:1.35rem;max-width:64ch;}
+li{margin-bottom:.5rem;}
+
+code{
+  font-family:var(--mono);
+  font-size:.87em;
+  background:var(--cell);
+  border:1px solid var(--line);
+  padding:1px 5px;
+  white-space:nowrap;
+}
+
+/* ---------- tables ---------- */
+
+.scroller{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;margin:1.35rem 0 .5rem;font-size:14px;}
+caption{
+  text-align:left;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  padding-bottom:.65rem;
+}
+th{
+  text-align:left;
+  font-family:var(--mono);
+  font-size:10.5px;
+  font-weight:500;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  padding:0 .9rem .5rem 0;
+  border-bottom:1px solid var(--line);
+}
+td{padding:.7rem .9rem .7rem 0;border-bottom:1px solid var(--line);vertical-align:top;}
+td:last-child,th:last-child{padding-right:0;}
+td.k{font-family:var(--mono);font-size:12.5px;color:var(--ink);white-space:nowrap;}
+
+/* ---------- specimen grids ---------- */
+
+.modes{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(196px,1fr));
+  gap:1px;
+  background:var(--line);
+  border:1px solid var(--line);
+  margin:1.4rem 0 .5rem;
+}
+.mode{background:var(--cell);padding:.8rem .95rem;}
+.mode b{display:block;font-size:14px;font-weight:600;letter-spacing:-.006em;}
+.mode span{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--ink-soft);}
+
+/* rule specimens: the real treatments, redrawn in site ink */
+.spec{border:1px solid var(--line);background:var(--cell);margin:1.4rem 0 .5rem;}
+.spec-row{
+  display:grid;
+  grid-template-columns:56px 1fr 128px;
+  align-items:center;
+  gap:1.1rem;
+  padding:1rem 1.1rem;
+  border-bottom:1px solid var(--line);
+}
+.spec-row:last-child{border-bottom:0;}
+.spec-i{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink-soft);}
+.spec-n{font-size:13px;color:var(--ink-soft);}
+.rule{height:12px;}
+.rule-0{border-bottom:6px solid var(--ink);}
+.rule-1{border-bottom:1.5px solid var(--ink);}
+.rule-2{border-bottom:7px double var(--ink);}
+.rule-3{border-bottom:5px dotted var(--ink);}
+.rule-4{border-bottom:5px dashed var(--ink);}
+.rule-5,.rule-6,.rule-7{
+  border-bottom:9px solid transparent;
+  background-repeat:repeat-x;
+  background-position:bottom left;
+}
+.rule-5{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='9'%3E%3Cpath d='M0 9A4 4 0 0 1 8 9A4 4 0 0 1 16 9' stroke='%23141311' stroke-width='2' fill='none'/%3E%3C/svg%3E");background-size:16px 9px;}
+.rule-6{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='10'%3E%3Cpath d='M0 9 4.5 1 9 9 13.5 1 18 9' stroke='%23141311' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-size:18px 10px;}
+.rule-7{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='10'%3E%3Cpath d='M0 6Q5.5 1 11 6T22 6' stroke='%23141311' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-size:22px 10px;}
+
+/* glyph specimens: eight treatments, monochrome */
+.glyphs{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(92px,1fr));
+  gap:1px;
+  background:var(--line);
+  border:1px solid var(--line);
+  margin:1.4rem 0 .5rem;
+}
+.glyph{background:var(--cell);padding:1rem .6rem .75rem;text-align:center;}
+.glyph svg{width:34px;height:34px;overflow:visible;display:block;margin:0 auto .55rem;}
+.glyph em{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--ink-soft);font-style:normal;}
+.g0 polygon{fill:var(--ink-soft);stroke:var(--ink);stroke-width:3;stroke-linejoin:round;}
+.g1 polygon{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-linejoin:round;}
+.g2 polygon{fill:none;stroke:var(--ink);stroke-width:5;stroke-linejoin:round;}
+.g3 polygon{fill:var(--ink);stroke:none;}
+.g4 polygon{fill:none;stroke:var(--ink);stroke-width:3;stroke-dasharray:4 3;stroke-linejoin:round;}
+.g5 polygon{fill:var(--ink-soft);stroke:var(--ink);stroke-width:2;stroke-linejoin:round;transform:rotate(10deg);transform-origin:24px 24px;}
+.g6 polygon{fill:none;stroke:var(--ink);stroke-width:2.5;stroke-linejoin:round;transform:rotate(-7deg) skewX(-6deg);transform-origin:24px 24px;}
+.g7 polygon{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;transform:scale(1.1);transform-origin:24px 24px;}
+
+/* ---------- flow ---------- */
+
+.flow{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);margin:1.4rem 0 .5rem;}
+.flow-step{
+  background:var(--cell);
+  padding:.95rem 1.1rem;
+  display:grid;
+  grid-template-columns:24px 1fr;
+  gap:1rem;
+  align-items:start;
+}
+.flow-step i{font-family:var(--mono);font-style:normal;font-size:11px;color:var(--ink-soft);padding-top:3px;}
+.flow-step div{font-size:14px;color:var(--ink-soft);}
+.flow-step b{color:var(--ink);font-weight:600;}
+
+/* ---------- callout ---------- */
+
+.note{
+  border-top:1px solid var(--ink);
+  border-bottom:1px solid var(--line);
+  padding:1.1rem 0 1.2rem;
+  margin:1.6rem 0 .5rem;
+}
+.note p{margin:0;max-width:60ch;font-size:14.5px;color:var(--ink-soft);}
+.note b{color:var(--ink);font-weight:600;}
+
+/* ---------- footer ---------- */
+
+footer{
+  padding:2.75rem 0 5rem;
+  border-top:1px solid var(--line);
+  font-family:var(--mono);
+  font-size:11.5px;
+  letter-spacing:.06em;
+  color:var(--ink-soft);
+}
+footer p{max-width:60ch;margin:0 0 .5rem;}
+footer a{text-decoration:none;border-bottom:1px solid var(--line);}
+footer a:hover{color:var(--ink);}
+
+@media (max-width:640px){
+  .spec-row{grid-template-columns:40px 1fr;gap:.5rem .8rem;}
+  .spec-row .spec-n{grid-column:2;}
+  section{padding:2.5rem 0;}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms !important;}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<a class="home" href="/" aria-label="Sea of Grass — all studies">
+  <svg viewBox="43.63 44.56 350.94 258.56" fill="currentColor" aria-hidden="true">
+    <path d="M 60.1360,299.5890 C 40.8560,283.5000 37.9720,248.8600 54.1230,229.1250 C 61.9590,219.4780 73.2066,213.0913 85.9080,212.4050 L 279.9170,212.3880 C 292.7328,211.6894 302.2259,200.5242 302.6140,188.1740 C 303.0171,175.3461 294.1087,163.3937 280.9850,162.4350 L 160.3860,162.3770 C 155.6830,162.3750 152.4580,158.1300 152.2660,154.1930 C 152.0640,150.0420 155.5000,145.5160 160.3230,145.5160 L 323.2740,145.5180 C 363.5090,146.7569 394.2264,180.5210 394.5670,220.2810 C 394.9023,259.4236 360.4620,297.7100 320.2520,299.1580 C 320.2520,299.1580 69.9310,307.7640 60.1360,299.5890 Z"/>
+    <path d="M 365.1390,47.9780 C 360.1170,47.5130 354.1470,47.1080 347.4230,46.7550 C 274.7440,42.9430 114.0820,45.2510 114.0820,45.2510 C 73.9994,46.9759 43.7290,80.8860 43.6260,120.3040 C 43.5230,159.4680 73.5199,193.9418 113.3820,195.4730 L 277.3270,195.8440 C 282.2870,195.8440 285.7460,192.0070 285.9600,187.6500 C 286.1670,183.4310 282.8680,178.9500 277.9760,178.9480 L 158.2750,178.9140 C 145.3037,178.2644 135.8119,166.8014 135.6040,154.2420 C 135.3960,141.6768 144.3477,129.9059 157.2620,128.9900 L 350.1640,128.8050 C 352.3160,128.8030 354.4280,128.6110 356.4990,128.2740 C 366.7370,126.6070 375.8830,121.0490 382.8160,113.4590 C 390.0330,105.5580 394.4238,95.7293 394.5320,85.6870 C 394.7250,67.7708 381.6430,52.8390 365.1390,47.9780 Z"/>
+    <circle cx="357.983" cy="86.686" r="36.548"/>
+  </svg>
+</a>
+
+<header class="top">
+  <p class="kicker">Study 02 · tristan.design</p>
+  <h1>A front door that is also an instrument</h1>
+  <p class="standfirst">The landing page of tristan.design opens on a full-screen generative visual synthesizer instead of a portfolio grid. Everything on it is playable, and one of the choices a visitor makes there follows them through the rest of the site. These are the notes on how it works.</p>
+  <div class="meta">
+    <span><b>Live</b> <a href="https://tristan.design" target="_blank" rel="noopener">tristan.design</a></span>
+    <span><b>Build</b> single-file bundle, 34 assets</span>
+    <span><b>Runtime</b> vanilla JS, 2D canvas</span>
+    <span><b>Dependencies</b> none</span>
+  </div>
+</header>
+
+<main>
+
+<section>
+  <span class="num">01 — The premise</span>
+  <h2>The toy is the portfolio piece</h2>
+  <p class="lead">Most design portfolios lead with a grid of work. This one leads with a thing you can play with, and puts the work underneath as a short list of names.</p>
+  <p>The reasoning is that a portfolio has about two seconds to prove that the person who made it can build something, and a generative visual engine running at full bleed proves it faster than a screenshot of a poster does. The work is one scroll away and clearly labelled; the front door is the argument for opening it.</p>
+  <p>The page is two screens. The first is the synthesizer and the wordmark. The second is a warm paper panel holding the project links, an about page and the contact route.</p>
+</section>
+
+<section>
+  <span class="num">02 — The visual engine</span>
+  <h2>Sixteen modes on one canvas</h2>
+  <p>An original EYESY-style engine drives a single <code>&lt;canvas&gt;</code> behind the wordmark. Each mode is a draw function operating on the same five-parameter state, so switching modes is instant and the parameters carry across — a shape you have dialled in stays dialled in when you move from Lava Lamp to Chomp.</p>
+
+  <div class="modes">
+    <div class="mode"><b>Bubble Wrap</b><span>01 · outlined circle grid</span></div>
+    <div class="mode"><b>Neon Nostalgia</b><span>02 · column polygons</span></div>
+    <div class="mode"><b>Prism Panic</b><span>03 · patchwork polygons</span></div>
+    <div class="mode"><b>Groove Juice</b><span>04 · uniform polygons</span></div>
+    <div class="mode"><b>Slime Funk Meltdown</b><span>05 · hertsi</span></div>
+    <div class="mode"><b>Hypno Waffle</b><span>06 · hypnogrid</span></div>
+    <div class="mode"><b>Disco Maze</b><span>07 · mirrored grid</span></div>
+    <div class="mode"><b>Portal Punch</b><span>08 · radiating square</span></div>
+    <div class="mode"><b>Glitter Bomb</b><span>09 · sequins</span></div>
+    <div class="mode"><b>Lava Lamp</b><span>10 · flow-field drift</span></div>
+    <div class="mode"><b>Wingding Rave</b><span>11 · font patterns</span></div>
+    <div class="mode"><b>Spirograph Sludge</b><span>12 · circle scope</span></div>
+    <div class="mode"><b>Goo Tube</b><span>13 · gradient column</span></div>
+    <div class="mode"><b>Chomp</b><span>14 · sound jaws</span></div>
+    <div class="mode"><b>Bouncy Castle</b><span>15 · bar bounce</span></div>
+    <div class="mode"><b>Chaos Engine</b><span>16 · randumbizer</span></div>
+  </div>
+
+  <h3>What the canvas is doing</h3>
+  <ul>
+    <li>Frames are throttled to roughly 30fps — the draw loop returns early if less than 32ms has passed. The modes are dense enough that the extra frames cost battery without reading as smoother.</li>
+    <li>Device pixel ratio is capped at 1.25 on viewports wider than 720px and 2 below it. A phone gets the sharpness; a 5K display does not get asked to fill 15 million pixels thirty times a second.</li>
+    <li>Trails are a mode of the clear step rather than a post effect: switching persistence off repaints the ground each frame, switching it on lets the previous frame bleed through.</li>
+  </ul>
+</section>
+
+<section>
+  <span class="num">03 — The control surface</span>
+  <h2>A sheet on a phone, a panel on a desktop</h2>
+  <p>The controls live in one panel with four tabs. On mobile it behaves as a draggable bottom sheet with a peek detent; on desktop it floats. It stays out of the way until asked for — the page is fully playable without ever opening it.</p>
+
+  <div class="scroller">
+    <table>
+      <caption>The four tabs</caption>
+      <thead><tr><th>Tab</th><th>Controls</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Mode</td><td>Previous / next, plus a full select</td><td>Tapping the artwork itself also jumps to a random mode</td></tr>
+        <tr><td class="k">Shape</td><td>Five drag knobs, labelled ♥ ✿ ★ ☯ ☻</td><td>The same five parameters mean something different in every mode, which is the point — you dial rather than configure</td></tr>
+        <tr><td class="k">Color</td><td>Foreground and background steppers with live swatches</td><td>Two palettes: a free hue walk, or a constrained brand set</td></tr>
+        <tr><td class="k">Effect</td><td>Flash, Shuffle, Trails, Palette, Music</td><td>Flash fires a one-shot trigger the modes respond to</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Keyboard</h3>
+  <p>The panel is operable without a pointer: <code>←</code> <code>→</code> step the mode, <code>space</code> flashes, <code>P</code> toggles trails, <code>R</code> shuffles, <code>Esc</code> closes. The knobs are real <code>role="slider"</code> elements with arrow-key support, not divs with drag handlers bolted on.</p>
+
+  <h3>Music</h3>
+  <p>The Music button asks for system or tab audio via <code>getDisplayMedia</code> and falls back to the microphone. The stream is routed through an <code>AudioContext</code> analyser at <code>fftSize 256</code>, and the level it reads is fed into the same trigger the Flash button fires — so every mode is already audio-reactive without a single mode-specific line of audio code.</p>
+
+  <h3>Teaching it</h3>
+  <p>A help card explains the four gestures in the page's own voice: <em>swipe</em> the background sideways for a new pattern, <em>tap</em> it for a surprise, click a <em>letter</em> in the name for a new face, open the <em>cloud</em> for the full set of controls. It is shown once and remembered.</p>
+</section>
+
+<section>
+  <span class="num">04 — The wordmark</span>
+  <h2>Seven letters, eight faces, one control surface</h2>
+  <p class="lead">The word <em>tristan</em> sitting over the canvas is not an image. Every letter is its own element, and clicking one advances it to the next typeface in a cycle of eight.</p>
+
+  <div class="scroller">
+    <table>
+      <caption>The face cycle</caption>
+      <thead><tr><th>#</th><th>Face</th><th>#</th><th>Face</th></tr></thead>
+      <tbody>
+        <tr><td class="k">0</td><td>Shrikhand</td><td class="k">4</td><td>Killuminati</td></tr>
+        <tr><td class="k">1</td><td>WooowLight</td><td class="k">5</td><td>Okiedoko</td></tr>
+        <tr><td class="k">2</td><td>Bigsock</td><td class="k">6</td><td>Boardslide</td></tr>
+        <tr><td class="k">3</td><td>Mornes</td><td class="k">7</td><td>Kaushan Script</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Because seven letters each hold one of eight faces independently, the wordmark has 8⁷ — just over two million — possible states. Every one of them is a legible rendering of the same word.</p>
+
+  <h3>The details that make it feel like an object</h3>
+  <ul>
+    <li>Each press fires a <em>jolt</em>: a small randomised translate, rotate and scale on that letter alone, on a stepped easing curve so it snaps rather than glides.</li>
+    <li>A burst of particles comes off the letter, and each letter throws its own glyph — <code>t</code> throws lightning, <code>r</code> throws hearts, <code>n</code> throws moons.</li>
+    <li>Glyph bounds are measured with SVG <code>getBBox</code> rather than canvas <code>measureText</code>. These display faces have wildly different ascents, and canvas measurement silently falls back to a substitute font and under-reports them, which made the layout jump. Reading the real loaded outline fixed it.</li>
+  </ul>
+</section>
+
+<section>
+  <span class="num">05 — Carry-over</span>
+  <h2>A choice made on the front door follows you</h2>
+  <p class="lead">This is the part that ties the site together. The faces you pick on the landing page are not decoration on that page — they are site-wide state.</p>
+
+  <div class="flow">
+    <div class="flow-step"><i>01</i><div>A visitor clicks a letter. The face index for that letter changes.</div></div>
+    <div class="flow-step"><i>02</i><div>The seven indices are written to <b>localStorage</b> as a single array.</div></div>
+    <div class="flow-step"><i>03</i><div>A <b>custom event</b> fires for anything listening in the same document — the wordmark at the foot of the page updates immediately.</div></div>
+    <div class="flow-step"><i>04</i><div>Every other page carries a small sync script. On load it reads the array and applies the faces; it also listens for the browser's <b>storage event</b>, so a change made in one tab lands in the others live.</div></div>
+    <div class="flow-step"><i>05</i><div>Open a case study and the wordmark in its nav is already wearing the faces you chose.</div></div>
+  </div>
+
+  <div class="note">
+    <p><b>Why it matters.</b> It is a two-million-state personalisation with no account, no cookie banner and no server — about forty lines of code total. A visitor who plays with the name on the front door finds their own version of it waiting on every page after, and most people notice it exactly once, which is the right number of times.</p>
+  </div>
+</section>
+
+<section>
+  <span class="num">06 — Downstream</span>
+  <h2>The same letters run the panel below</h2>
+  <p>On the lower panel, the same seven numbers are put to a second use. Each project link takes its underline treatment from the matching letter — link one from letter one, and so on — and the last letter sets the style of every glyph in the list.</p>
+
+  <div class="spec">
+    <div class="spec-row"><span class="spec-i">0</span><span class="rule rule-0"></span><span class="spec-n">6px solid</span></div>
+    <div class="spec-row"><span class="spec-i">1</span><span class="rule rule-1"></span><span class="spec-n">1.5px hairline</span></div>
+    <div class="spec-row"><span class="spec-i">2</span><span class="rule rule-2"></span><span class="spec-n">7px double</span></div>
+    <div class="spec-row"><span class="spec-i">3</span><span class="rule rule-3"></span><span class="spec-n">5px dotted</span></div>
+    <div class="spec-row"><span class="spec-i">4</span><span class="rule rule-4"></span><span class="spec-n">5px dashed</span></div>
+    <div class="spec-row"><span class="spec-i">5</span><span class="rule rule-5"></span><span class="spec-n">scallop</span></div>
+    <div class="spec-row"><span class="spec-i">6</span><span class="rule rule-6"></span><span class="spec-n">zigzag</span></div>
+    <div class="spec-row"><span class="spec-i">7</span><span class="rule rule-7"></span><span class="spec-n">wave</span></div>
+  </div>
+  <p>The last three are repeating inline SVG rather than border styles, because CSS has no scalloped or wavy border and a background image tiled along the bottom edge costs nothing.</p>
+
+  <h3>Eight glyph treatments</h3>
+  <p>The seventh letter switches the whole list's marks between fill and stroke weights, dashes, and rotations:</p>
+  <div class="glyphs">
+    <div class="glyph g0"><svg viewBox="0 0 48 48"><polygon points="24,3 30.2,17.2 45.6,18.4 33.9,28.4 37.5,43.5 24,35.5 10.5,43.5 14.1,28.4 2.4,18.4 17.8,17.2"/></svg><em>0</em></div>
+    <div class="glyph g1"><svg viewBox="0 0 48 48"><polygon points="24,3 30.2,17.2 45.6,18.4 33.9,28.4 37.5,43.5 24,35.5 10.5,43.5 14.1,28.4 2.4,18.4 17.8,17.2"/></svg><em>1</em></div>
+    <div class="glyph g2"><svg viewBox="0 0 48 48"><polygon points="24,3 30.2,17.2 45.6,18.4 33.9,28.4 37.5,43.5 24,35.5 10.5,43.5 14.1,28.4 2.4,18.4 17.8,17.2"/></svg><em>2</em></div>
+    <div class="glyph g3"><svg viewBox="0 0 48 48"><polygon points="24,3 30.2,17.2 45.6,18.4 33.9,28.4 37.5,43.5 24,35.5 10.5,43.5 14.1,28.4 2.4,18.4 17.8,17.2"/></svg><em>3</em></div>
+    <div class="glyph g4"><svg viewBox="0 0 48 48"><polygon points="24,3 30.2,17.2 45.6,18.4 33.9,28.4 37.5,43.5 24,35.5 10.5,43.5 14.1,28.4 2.4,18.4 17.8,17.2"/></svg><em>4</em></div>
+    <div class="glyph g5"><svg viewBox="0 0 48 48"><polygon points="24,3 30.2,17.2 45.6,18.4 33.9,28.4 37.5,43.5 24,35.5 10.5,43.5 14.1,28.4 2.4,18.4 17.8,17.2"/></svg><em>5</em></div>
+    <div class="glyph g6"><svg viewBox="0 0 48 48"><polygon points="24,3 30.2,17.2 45.6,18.4 33.9,28.4 37.5,43.5 24,35.5 10.5,43.5 14.1,28.4 2.4,18.4 17.8,17.2"/></svg><em>6</em></div>
+    <div class="glyph g7"><svg viewBox="0 0 48 48"><polygon points="24,3 30.2,17.2 45.6,18.4 33.9,28.4 37.5,43.5 24,35.5 10.5,43.5 14.1,28.4 2.4,18.4 17.8,17.2"/></svg><em>7</em></div>
+  </div>
+  <p>Nothing announces any of this. The panel simply looks slightly different depending on what you did upstairs.</p>
+</section>
+
+<section>
+  <span class="num">07 — State</span>
+  <h2>What is remembered, and where</h2>
+  <p>Everything persists in <code>localStorage</code>. There is no server, no session and no analytics attached to any of it.</p>
+
+  <div class="scroller">
+    <table>
+      <caption>Storage keys</caption>
+      <thead><tr><th>Key</th><th>Holds</th></tr></thead>
+      <tbody>
+        <tr><td class="k">tristan-letters</td><td>The seven face indices for the wordmark. The one key read by every other page.</td></tr>
+        <tr><td class="k">tristan-eyesy-v6</td><td>Synth state — mode, the five shape parameters, foreground and background positions, trails, palette.</td></tr>
+        <tr><td class="k">tristan-help-seen-v1</td><td>Whether the how-to-play card has been shown.</td></tr>
+        <tr><td class="k">tristan-touched-v4</td><td>Whether the visitor has interacted with the canvas, used to stop nudging them.</td></tr>
+        <tr><td class="k">tristan-touched-panel-v1</td><td>The same, for the control panel.</td></tr>
+        <tr><td class="k">tristan-ctrl-mini</td><td>Panel size preference.</td></tr>
+        <tr><td class="k">tristan-ctrl-used</td><td>Whether the panel has been opened before.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Every read is wrapped in a try/catch and every one has a working default, so private browsing, cleared storage and a blocked storage API all degrade to a page that simply starts fresh.</p>
+</section>
+
+<section>
+  <span class="num">08 — Motion, access, weight</span>
+  <h2>The parts that are easy to skip</h2>
+
+  <h3>Reduced motion</h3>
+  <p>The page respects <code>prefers-reduced-motion</code> in nineteen places. Under it, letter jolts and particle bursts do not fire, the scroll-reveal on the project links resolves immediately rather than sliding in, and the decorative line pulse is removed outright. The synth still runs — it is the content, not an animation — but nothing jumps at anyone.</p>
+
+  <h3>Keyboard and screen readers</h3>
+  <p>The wordmark carries an <code>aria-label</code> of the plain word, so it reads as "tristan" rather than seven separate letters. The shape knobs are sliders with proper value ranges. Every control has a visible focus ring, and the whole synth can be driven from the keyboard alone.</p>
+
+  <h3>Weight</h3>
+  <p>Nine display faces are self-hosted for the wordmark, which is expensive — until you notice they only ever set one word. Every one of them is subset down to the fourteen characters of <em>tristan</em> in both cases and re-encoded as WOFF2, taking the page from 4.17 MB to 1.13 MB with no visible change. The body face is left whole, because it has real text to set.</p>
+
+  <div class="note">
+    <p><b>The trade this documents.</b> A generative front door is a risk: it delays the work by one scroll and it asks a visitor to be curious. The mitigations are all in this page — it is fast, it is playable without instructions, it works with the keyboard, it calms down if you have asked your system to calm things down, and it remembers what you did.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>Study 02. Written to accompany the live site; the page itself is the reference implementation.</p>
+  <p><a href="/">← All studies</a></p>
+</footer>
+
+</div>
+
+</body>
+</html>

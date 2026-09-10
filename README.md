@@ -11,6 +11,7 @@ you are looking at the real thing.
 index.html                    landing page: the mark, and the index of studies
 studies/
   scrollwork/index.html       Study 01 — self-contained, ~10 KB
+  front-door/index.html       Study 02 — self-contained, ~18 KB
 assets/
   logo.svg                    the mark, fill="currentColor" (inherits type color)
   favicon.svg                 same mark, explicit fill, a little padding
@@ -48,6 +49,11 @@ Shared conventions across the site, rather than shared code:
 | Hairline | `#d9d6cf` |
 | Ink, soft | `rgba(20,19,17,.5)` |
 | Type | IBM Plex Mono, 400 / 500 |
+
+A study that is mostly prose may set running text in **IBM Plex Sans** — same
+superfamily, so it reads as the system growing rather than a second look. Mono still
+sets every label, table, code span and number. Studies that are mostly picture stay in
+mono throughout, like Scrollwork.
 
 Labels are uppercase, `letter-spacing: .14em`, 13px. Numbers use
 `font-variant-numeric: tabular-nums`.
