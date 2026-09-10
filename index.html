@@ -1,12 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
 <meta charset="utf-8" />
-<title>Scrollwork</title>
-<meta name="description" content="A generative radial pattern, built from nested SVG primitives, that reshapes continuously as you scroll." />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sea of Grass</title>
+<meta name="description" content="Sea of Grass is a studio exploring new technology in relation to art and design. Studies, in the open." />
+<link rel="canonical" href="https://seaofgrass.studio/" />
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Sea of Grass" />
+<meta property="og:url" content="https://seaofgrass.studio/" />
+<meta property="og:title" content="Sea of Grass" />
+<meta property="og:description" content="A studio exploring new technology in relation to art and design. Studies, in the open." />
+<meta name="twitter:card" content="summary" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
 <style>
+  /* Same paper, ink and hairline as the studies themselves.
+     One typeface across the whole site. */
   :root{
     --paper:#faf9f6;
     --ink:#141311;
@@ -21,267 +36,167 @@
     background:var(--paper);
     color:var(--ink);
     font-family:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
-    overflow-x:hidden;
+    font-size:14px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
   }
 
-  /* Tall scroll track that gives the scrubber room to run. */
-  .track{
-    position:relative;
-    height:700vh;
+  .page{
+    max-width:44rem;
+    margin:0 auto;
+    padding:clamp(3rem,10vh,7rem) clamp(1.25rem,5vw,2rem) 4rem;
   }
 
-  .stage{
-    position:sticky;
-    top:0;
-    height:100vh;
-    width:100%;
-    overflow:hidden;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+  /* ---------- masthead ---------- */
+
+  .mark{
+    display:block;
+    width:clamp(72px,13vw,104px);
+    height:auto;
+    color:var(--ink);
   }
 
-  .stage svg{
-    width:min(86vw,86vh);
-    height:min(86vw,86vh);
-    overflow:visible;
-  }
-
-  .ring rect{
-    fill:none;
-    stroke:var(--ink);
-    vector-effect:non-scaling-stroke;
-  }
-
-  .intro{
-    position:fixed;
-    top:28px;
-    left:0;
-    right:0;
-    text-align:center;
-    pointer-events:none;
-    z-index:5;
-  }
-  .intro .name{
+  .wordmark{
+    margin:1.5rem 0 0;
     font-size:13px;
+    font-weight:500;
     letter-spacing:.14em;
     text-transform:uppercase;
-    margin:0 0 6px;
-  }
-  .intro .hint{
-    font-size:12px;
-    color:var(--ink-soft);
-    margin:0;
   }
 
-  .readout{
-    position:fixed;
-    left:24px;
-    bottom:22px;
-    font-size:12px;
-    line-height:1.7;
+  .premise{
+    margin:.4rem 0 0;
+    max-width:30rem;
+    font-size:13px;
     color:var(--ink-soft);
-    z-index:5;
-    font-variant-numeric:tabular-nums;
   }
-  .readout span{color:var(--ink);}
 
-  .credit{
-    position:fixed;
-    right:24px;
-    bottom:22px;
-    font-size:12px;
-    line-height:1.7;
-    color:var(--ink-soft);
-    z-index:5;
-    text-align:right;
-  }
-  .credit a{
-    color:var(--ink-soft);
-    text-decoration:none;
+  /* ---------- studies ---------- */
+
+  .studies-head{
+    display:flex;
+    align-items:baseline;
+    gap:1rem;
+    margin:clamp(3.5rem,9vh,6rem) 0 0;
+    padding:0 0 .9rem;
     border-bottom:1px solid var(--line);
   }
-  .credit a:hover{color:var(--ink);}
 
-  .progress{
-    position:fixed;
-    left:0;
-    top:0;
-    height:2px;
-    background:var(--ink);
-    z-index:6;
-    width:0%;
+  h1{
+    margin:0;
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:.14em;
+    text-transform:uppercase;
   }
 
-  @media (max-width:640px){
-    .intro{top:20px;}
-    .readout,.credit{font-size:11px;}
-    .readout{left:16px;bottom:16px;}
-    .credit{right:16px;bottom:16px;}
+  .count{
+    margin:0;
+    font-size:12px;
+    color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
+  }
+
+  ol{
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
+
+  li + li{border-top:1px solid var(--line);}
+
+  .study{
+    display:grid;
+    grid-template-columns:2.75rem minmax(0,1fr);
+    gap:0 1rem;
+    padding:1.35rem 0;
+    text-decoration:none;
+    color:inherit;
+    transition:color .18s ease;
+  }
+
+  .study .n{
+    font-size:12px;
+    color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
+    padding-top:.15rem;
+    transition:color .18s ease;
+  }
+
+  .study .title{
+    display:block;
+    font-size:15px;
+    font-weight:500;
+    letter-spacing:.01em;
+  }
+
+  .study .desc{
+    display:block;
+    margin-top:.3rem;
+    font-size:13px;
+    color:var(--ink-soft);
+    max-width:34rem;
+  }
+
+  .study:hover .n,
+  .study:focus-visible .n{color:var(--ink);}
+
+  .study:focus-visible{
+    outline:1px solid var(--ink);
+    outline-offset:6px;
+  }
+
+  footer{
+    margin-top:clamp(3.5rem,9vh,6rem);
+    padding-top:1.1rem;
+    border-top:1px solid var(--line);
+    font-size:12px;
+    color:var(--ink-soft);
   }
 
   @media (prefers-reduced-motion:reduce){
-    .track{height:340vh;}
+    *{transition-duration:.01ms !important;}
   }
 </style>
+</head>
+<body>
 
-<div class="progress" id="progress"></div>
+<div class="page">
 
-<div class="intro" id="intro">
-  <p class="name">Scrollwork</p>
-  <p class="hint">scroll to reshape ↓</p>
-</div>
-
-<div class="track">
-  <div class="stage">
-    <svg id="svg" viewBox="-220 -220 440 440" role="img" aria-label="A generative radial pattern that changes shape as the page scrolls">
-      <g class="ring" id="ringOuter"></g>
-      <g class="ring" id="ringMid"></g>
-      <g class="ring" id="ringInner"></g>
+  <header>
+    <svg class="mark" viewBox="43.63 44.56 350.94 258.56" fill="currentColor" role="img" aria-label="Sea of Grass">
+      <path d="M 60.1360,299.5890 C 40.8560,283.5000 37.9720,248.8600 54.1230,229.1250 C 61.9590,219.4780 73.2066,213.0913 85.9080,212.4050 L 279.9170,212.3880 C 292.7328,211.6894 302.2259,200.5242 302.6140,188.1740 C 303.0171,175.3461 294.1087,163.3937 280.9850,162.4350 L 160.3860,162.3770 C 155.6830,162.3750 152.4580,158.1300 152.2660,154.1930 C 152.0640,150.0420 155.5000,145.5160 160.3230,145.5160 L 323.2740,145.5180 C 363.5090,146.7569 394.2264,180.5210 394.5670,220.2810 C 394.9023,259.4236 360.4620,297.7100 320.2520,299.1580 C 320.2520,299.1580 69.9310,307.7640 60.1360,299.5890 Z"/>
+      <path d="M 365.1390,47.9780 C 360.1170,47.5130 354.1470,47.1080 347.4230,46.7550 C 274.7440,42.9430 114.0820,45.2510 114.0820,45.2510 C 73.9994,46.9759 43.7290,80.8860 43.6260,120.3040 C 43.5230,159.4680 73.5199,193.9418 113.3820,195.4730 L 277.3270,195.8440 C 282.2870,195.8440 285.7460,192.0070 285.9600,187.6500 C 286.1670,183.4310 282.8680,178.9500 277.9760,178.9480 L 158.2750,178.9140 C 145.3037,178.2644 135.8119,166.8014 135.6040,154.2420 C 135.3960,141.6768 144.3477,129.9059 157.2620,128.9900 L 350.1640,128.8050 C 352.3160,128.8030 354.4280,128.6110 356.4990,128.2740 C 366.7370,126.6070 375.8830,121.0490 382.8160,113.4590 C 390.0330,105.5580 394.4238,95.7293 394.5320,85.6870 C 394.7250,67.7708 381.6430,52.8390 365.1390,47.9780 Z"/>
+      <circle cx="357.983" cy="86.686" r="36.548"/>
     </svg>
-  </div>
+    <p class="wordmark">Sea of Grass</p>
+    <p class="premise">A studio exploring new technology in relation to art and design.</p>
+  </header>
+
+  <main>
+    <div class="studies-head">
+      <h1>Studies</h1>
+      <p class="count">01</p>
+    </div>
+
+    <ol>
+      <li>
+        <a class="study" href="/studies/scrollwork/">
+          <span class="n">01</span>
+          <span>
+            <span class="title">Scrollwork</span>
+            <span class="desc">A generative radial pattern, built from nested SVG primitives, that reshapes continuously as you scroll.</span>
+          </span>
+        </a>
+      </li>
+    </ol>
+  </main>
+
+  <footer>
+    Tristan Brewer &amp; Bryce Nielsen
+  </footer>
+
 </div>
 
-<div class="readout" id="readout">
-  n <span id="rN">00</span>&nbsp;&nbsp;⟳ <span id="rA">000°</span>&nbsp;&nbsp;◧ <span id="rR">0.00</span>
-</div>
-<div class="credit">
-  technique adapted from<br>
-  <a href="https://github.com/ndrwhr/svg-animation-src" target="_blank" rel="noopener">ndrwhr/svg-animation-src</a>
-</div>
-
-<script>
-(function(){
-  var N = 16;
-  var TAU = Math.PI * 2;
-
-  function buildRing(id, count){
-    var g = document.getElementById(id);
-    var frag = document.createDocumentFragment();
-    for (var i = 0; i < count; i++){
-      var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      rect.setAttribute('data-i', i);
-      frag.appendChild(rect);
-    }
-    g.appendChild(frag);
-    return g.querySelectorAll('rect');
-  }
-
-  var outerItems = buildRing('ringOuter', N);
-  var midItems = buildRing('ringMid', N);
-  var innerItems = buildRing('ringInner', Math.round(N / 2));
-
-  function lerp(a, b, t){ return a + (b - a) * t; }
-  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
-  function smoothstep(edge0, edge1, x){
-    var t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
-    return t * t * (3 - 2 * t);
-  }
-  // Triangle wave 0..1..0 with given number of cycles over p in [0,1].
-  function triangle(p, cycles){
-    var x = (p * cycles) % 1;
-    return x < 0.5 ? x * 2 : 2 - x * 2;
-  }
-
-  function renderRing(items, opts){
-    var count = items.length;
-    var spacingCount = Math.max(1, opts.activeCount);
-    items.forEach(function(rect){
-      var i = +rect.getAttribute('data-i');
-      var angle = (i / spacingCount) * TAU + opts.angleOffset;
-      var cx = Math.cos(angle) * opts.radius;
-      var cy = Math.sin(angle) * opts.radius;
-
-      var visible = smoothstep(i - 1, i, opts.activeCount) - smoothstep(count - 1, count, i);
-      visible = clamp(visible, 0, 1);
-      if (i >= opts.activeCount + 1) visible = 0;
-
-      var size = opts.size * (0.6 + 0.4 * visible);
-      var rx = size * 0.5 * opts.roundness;
-      var selfRotate = opts.selfRotation + i * opts.stagger;
-
-      rect.setAttribute('x', -size / 2);
-      rect.setAttribute('y', -size / 2);
-      rect.setAttribute('width', size);
-      rect.setAttribute('height', size);
-      rect.setAttribute('rx', rx);
-      rect.setAttribute('stroke-width', opts.strokeWidth);
-      rect.style.opacity = visible;
-      rect.setAttribute(
-        'transform',
-        'translate(' + cx.toFixed(2) + ',' + cy.toFixed(2) + ') rotate(' + selfRotate.toFixed(2) + ')'
-      );
-    });
-  }
-
-  var progressEl = document.getElementById('progress');
-  var introEl = document.getElementById('intro');
-  var rN = document.getElementById('rN');
-  var rA = document.getElementById('rA');
-  var rR = document.getElementById('rR');
-  var track = document.querySelector('.track');
-
-  var ticking = false;
-
-  function update(){
-    ticking = false;
-
-    var scrollable = track.offsetHeight - window.innerHeight;
-    var p = scrollable > 0 ? window.scrollY / scrollable : 0;
-    p = clamp(p, 0, 1);
-
-    progressEl.style.width = (p * 100).toFixed(2) + '%';
-    introEl.style.opacity = clamp(1 - p * 9, 0, 1);
-
-    var activeCountOuter = lerp(3, N, p);
-    var outerAngle = p * 260;
-    var roundness = triangle(p, 3.5);
-
-    renderRing(outerItems, {
-      radius: lerp(70, 165, p),
-      size: lerp(30, 20, p),
-      roundness: roundness,
-      angleOffset: (outerAngle * Math.PI) / 180,
-      selfRotation: -p * 900,
-      stagger: 360 / N,
-      strokeWidth: lerp(1.4, 0.6, p),
-      activeCount: activeCountOuter
-    });
-
-    renderRing(midItems, {
-      radius: lerp(70, 165, p) * 0.62,
-      size: lerp(30, 20, p) * 0.64,
-      roundness: 1 - roundness,
-      angleOffset: (-outerAngle * 1.4 * Math.PI) / 180,
-      selfRotation: p * 900 * 1.3,
-      stagger: 360 / N,
-      strokeWidth: lerp(1.1, 0.45, p),
-      activeCount: lerp(0.5, N, smoothstep(0.12, 0.85, p))
-    });
-
-    var innerCount = innerItems.length;
-    renderRing(innerItems, {
-      radius: lerp(24, 46, triangle(p, 2)),
-      size: lerp(14, 9, p),
-      roundness: triangle(p + 0.25, 3.5),
-      angleOffset: (outerAngle * -2.2 * Math.PI) / 180,
-      selfRotation: -p * 1500,
-      stagger: 360 / innerCount,
-      strokeWidth: 1,
-      activeCount: lerp(0.5, innerCount, smoothstep(0.3, 0.9, p))
-    });
-
-    rN.textContent = String(Math.round(activeCountOuter)).padStart(2, '0');
-    rA.textContent = Math.round(((outerAngle % 360) + 360) % 360) + '°';
-    rR.textContent = roundness.toFixed(2);
-  }
-
-  function onScroll(){
-    if (!ticking){ ticking = true; requestAnimationFrame(update); }
-  }
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
-  update();
-})();
-</script>
+</body>
+</html>
