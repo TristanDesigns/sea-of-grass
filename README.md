@@ -62,6 +62,30 @@ the page**, not in a comment. Scrollwork does this and it should stay the rule.
 3. Add a row to the `<ol>` in the root `index.html` and bump the count in
    `.studies-head`.
 
+## Working together
+
+`main` is protected. No direct pushes, no force pushes, no deleting the branch — which
+means nothing committed here can be destroyed, only added to or reverted. That applies
+to both of us equally.
+
+    git pull
+    git checkout -b what-youre-building
+    # ...work...
+    git push -u origin what-youre-building
+    gh pr create --fill && gh pr merge --squash
+
+No approval is required — merge your own when you're happy with it. Merging deploys
+immediately, so the pull request is a moment to read the diff, not a gate you need the
+other person to open.
+
+**Studies belong to whoever makes them.** Don't edit someone else's `studies/<name>/`
+directory. Branch protection prevents the catastrophic case; staying out of each other's
+files is what prevents the daily friction. The only genuinely shared surface is the
+`<ol>` in the root `index.html` — one row per study — and this README.
+
+To undo something, `git revert` it. That reverses the change while keeping the record,
+which is the opposite of `git reset --hard` on a shared branch.
+
 ## Who
 
 Tristan Brewer and Bryce Nielsen. Founded September 2025.
