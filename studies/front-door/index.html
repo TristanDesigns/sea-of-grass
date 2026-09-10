@@ -65,6 +65,43 @@ a:focus-visible{outline:1px solid var(--ink);outline-offset:4px;}
 .home:hover,.home:focus-visible{color:var(--ink);}
 .home svg{display:block;width:100%;height:auto;}
 
+/* ---------- live embed ---------- */
+
+.demo{margin:2.25rem 0 0;}
+.demo-frame{
+  position:relative;
+  border:1px solid var(--line);
+  background:var(--cell);
+  aspect-ratio:16/10;
+  overflow:hidden;
+}
+.demo-frame iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+.demo-cap{
+  display:flex;
+  justify-content:space-between;
+  gap:.4rem 1.5rem;
+  flex-wrap:wrap;
+  margin-top:.6rem;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+}
+.demo-cap a{text-decoration:none;border-bottom:1px solid var(--line);}
+.demo-cap a:hover,.demo-cap a:focus-visible{color:var(--ink);}
+
+@media (max-width:640px){
+  .demo-frame{aspect-ratio:4/5;}
+}
+
 /* ---------- masthead ---------- */
 
 .top{
@@ -325,6 +362,18 @@ footer a:hover{color:var(--ink);}
     <span><b>Dependencies</b> none</span>
   </div>
 </header>
+
+<div class="demo">
+  <div class="demo-frame">
+    <iframe src="https://tristan.design/"
+            title="tristan.design — the live landing page, playable"
+            loading="eager"></iframe>
+  </div>
+  <div class="demo-cap">
+    <span>Live — click a letter, drag the background</span>
+    <a href="https://tristan.design" target="_blank" rel="noopener">Open full size &#8599;</a>
+  </div>
+</div>
 
 <main>
 
