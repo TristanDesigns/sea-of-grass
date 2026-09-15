@@ -88,16 +88,34 @@ function buildFrame(){
     fill:"var(--amber-hi)", filter:"url(#bloom)"}));
 }
 
-/* Position the reflection canvas over the SVG's aperture. */
+/* Position the reflection canvas over the SVG's aperture, and the prompt and
+ * controls into the empty run of frame between the band and the base. Both are
+ * placed from the same constants the frame is drawn from, so nothing drifts
+ * out of the box when the glass is resized. */
+const GUI_TOP = BAND + 14;          // just clear of the band
+const GUI_BOTTOM = FRAME.y1 - 34;   // just clear of the base corner
+
 function placeFeed(){
-  const box = $("glassBox"), feed = $("feed");
+  const box = $("glassBox"), feed = $("feed"), gui = $("gui");
   const k = box.clientWidth / W;
+
   feed.style.left = (AP.x0*k)+"px";
   feed.style.top  = (AP.y0*k)+"px";
   feed.style.width  = ((AP.x1-AP.x0)*k)+"px";
   feed.style.height = ((AP.y1-AP.y0)*k)+"px";
   feed.width  = Math.round((AP.x1-AP.x0));
   feed.height = Math.round((AP.y1-AP.y0));
+
+  if (!gui) return;
+  // Type scales with the frame, but not all the way down — below about 0.8 the
+  // prompt stops being readable, and there is slack in the panel to absorb it.
+  const s = Math.max(0.8, Math.min(1, k));
+  box.style.setProperty("--s", s.toFixed(3));
+  gui.style.left   = (AP.x0*k)+"px";
+  gui.style.top    = (GUI_TOP*k)+"px";
+  gui.style.width  = ((AP.x1-AP.x0)*k)+"px";
+  gui.style.height = ((GUI_BOTTOM-GUI_TOP)*k)+"px";
+  gui.classList.toggle("tight", box.clientWidth < 430);
 }
 
 /* ------------------------------------------------------------- capture */

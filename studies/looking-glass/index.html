@@ -58,24 +58,62 @@
   #feed{position:absolute;object-fit:cover;background:#000;}
   video{display:none;}
 
-  .prompt{text-align:center;min-height:52px;padding-top:4px;}
-  .prompt .head{font-size:13px;letter-spacing:.1em;text-transform:uppercase;}
-  .prompt .sub{font-size:12px;color:var(--text-soft);margin-top:4px;}
+  /* Everything the instrument says and does lives inside the frame, in the
+     empty run between the band and the base. Positioned in JS from the same
+     geometry the SVG is drawn from, so it tracks the frame at every width. */
+  .gui{
+    position:absolute;
+    display:flex;flex-direction:column;align-items:center;
+    gap:calc(9px * var(--s,1));
+    text-align:center;
+    pointer-events:none;
+  }
+  .gui > *{pointer-events:auto;}
 
-  .controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:10px 0 4px;}
+  .prompt{min-height:calc(34px * var(--s,1));}
+  .prompt .head{
+    font-size:calc(13px * var(--s,1));letter-spacing:.12em;text-transform:uppercase;
+    color:var(--amber-hi);line-height:1.3;
+  }
+  .prompt .sub{
+    font-size:calc(11.5px * var(--s,1));color:var(--text-soft);
+    margin-top:calc(3px * var(--s,1));line-height:1.35;
+  }
+
+  .controls{
+    display:flex;flex-direction:column;align-items:center;
+    gap:calc(7px * var(--s,1));width:100%;
+  }
+  .btns{display:flex;gap:calc(6px * var(--s,1));justify-content:center;flex-wrap:wrap;}
   button{
-    font:inherit;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
-    color:var(--text);background:transparent;border:1px solid var(--line);
-    padding:9px 16px;cursor:pointer;border-radius:2px;
+    font:inherit;font-size:calc(10.5px * var(--s,1));letter-spacing:.07em;
+    text-transform:uppercase;color:var(--text);background:transparent;
+    border:1px solid var(--line);
+    padding:calc(6px * var(--s,1)) calc(11px * var(--s,1));
+    cursor:pointer;border-radius:2px;line-height:1.3;
   }
   button:hover:not(:disabled){border-color:var(--amber);color:var(--amber-hi);}
   button:disabled{opacity:.3;cursor:default;}
   input[type=text]{
-    font:inherit;font-size:13px;letter-spacing:.1em;text-transform:uppercase;
-    text-align:center;color:var(--amber-hi);background:transparent;
-    border:1px solid var(--line);border-radius:2px;padding:9px 12px;width:190px;
+    font:inherit;font-size:calc(11.5px * var(--s,1));letter-spacing:.1em;
+    text-transform:uppercase;text-align:center;color:var(--amber-hi);
+    background:transparent;border:1px solid var(--line);border-radius:2px;
+    padding:calc(6px * var(--s,1)) calc(10px * var(--s,1));
+    width:calc(160px * var(--s,1));max-width:100%;
   }
   input[type=text]:focus{outline:none;border-color:var(--amber);}
+  input[type=text]::placeholder{color:var(--text-soft);}
+
+  /* A narrow glass cannot hold three long labels on one row, and letting them
+     wrap pushes the last button into the base of the frame. Shorten the words
+     rather than shrink the type any further. */
+  button .narrow{display:none;}
+  .gui.tight button .wide{display:none;}
+  .gui.tight button .narrow{display:inline;}
+  .gui.tight{gap:calc(7px * var(--s,1));}
+  .gui.tight .prompt .sub{font-size:calc(10.5px * var(--s,1));}
+  .gui.tight input[type=text]{width:calc(140px * var(--s,1));}
+  .gui.tight .btns{flex-wrap:nowrap;}
 
   .privacy{
     max-width:58ch;margin:14px auto 0;text-align:center;
@@ -145,19 +183,23 @@
         </defs>
         <g id="rays"></g><g id="frame"></g><g id="eye"></g>
       </svg>
+
+      <div class="gui" id="gui">
+        <div class="prompt">
+          <div class="head" id="pHead">The glass is closed</div>
+          <div class="sub" id="pSub">nothing is running until you open it</div>
+        </div>
+
+        <div class="controls">
+          <input type="text" id="name" placeholder="YOUR NAME" maxlength="18" autocomplete="off">
+          <div class="btns">
+            <button id="open"><span class="wide">Open the glass</span><span class="narrow">Open</span></button>
+            <button id="save" disabled><span class="wide">Save the view</span><span class="narrow">Save</span></button>
+            <button id="reset" disabled><span class="wide">Start over</span><span class="narrow">Reset</span></button>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-
-  <div class="prompt">
-    <div class="head" id="pHead">The glass is closed</div>
-    <div class="sub" id="pSub">nothing is running until you open it</div>
-  </div>
-
-  <div class="controls">
-    <input type="text" id="name" placeholder="YOUR NAME" maxlength="18" autocomplete="off">
-    <button id="open">Open the glass</button>
-    <button id="save" disabled>Save the view</button>
-    <button id="reset" disabled>Start over</button>
   </div>
 
   <p class="privacy">
