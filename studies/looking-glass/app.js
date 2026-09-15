@@ -88,16 +88,34 @@ function buildFrame(){
     fill:"var(--amber-hi)", filter:"url(#bloom)"}));
 }
 
-/* Position the reflection canvas over the SVG's aperture. */
+/* Position the reflection canvas over the SVG's aperture, and the prompt and
+ * controls into the empty run of frame between the band and the base. Both are
+ * placed from the same constants the frame is drawn from, so nothing drifts
+ * out of the box when the glass is resized. */
+const GUI_TOP = BAND + 14;          // just clear of the band
+const GUI_BOTTOM = FRAME.y1 - 34;   // just clear of the base corner
+
 function placeFeed(){
-  const box = $("glassBox"), feed = $("feed");
+  const box = $("glassBox"), feed = $("feed"), gui = $("gui");
   const k = box.clientWidth / W;
+
   feed.style.left = (AP.x0*k)+"px";
   feed.style.top  = (AP.y0*k)+"px";
   feed.style.width  = ((AP.x1-AP.x0)*k)+"px";
   feed.style.height = ((AP.y1-AP.y0)*k)+"px";
   feed.width  = Math.round((AP.x1-AP.x0));
   feed.height = Math.round((AP.y1-AP.y0));
+
+  if (!gui) return;
+  // Type scales with the frame, but not all the way down — below about 0.8 the
+  // prompt stops being readable, and there is slack in the panel to absorb it.
+  const s = Math.max(0.8, Math.min(1, k));
+  box.style.setProperty("--s", s.toFixed(3));
+  gui.style.left   = (AP.x0*k)+"px";
+  gui.style.top    = (GUI_TOP*k)+"px";
+  gui.style.width  = ((AP.x1-AP.x0)*k)+"px";
+  gui.style.height = ((GUI_BOTTOM-GUI_TOP)*k)+"px";
+  gui.classList.toggle("tight", box.clientWidth < 430);
 }
 
 /* ------------------------------------------------------------- capture */
@@ -152,7 +170,25 @@ async function openGlass(){
       outputFaceBlendshapes:true, outputFacialTransformationMatrixes:true});
   }
   $("open").disabled = true; $("reset").disabled = false;
-  running = true; requestAnimationFrame(tick);
+  running = true; setCapturing(true); requestAnimationFrame(tick);
+}
+
+/* The glass looking is a mode, not just a flag: the name field has done its
+ * job, the buttons step back, and the keys line says what is available. */
+function setCapturing(on){
+  $("gui").classList.toggle("capturing", on);
+  if (on) setKeys("ESC to quit");
+}
+
+function setKeys(s){ $("keys").textContent = s; }
+
+function closeGlass(){
+  running = false;
+  setCapturing(false);
+  if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; }
+  $("open").disabled = false;
+  $("reset").disabled = true;
+  setPrompt("The glass is closed", "nothing is running until you open it");
 }
 
 let lastTs = -1;
@@ -215,6 +251,7 @@ function handle(res, v, ctx, feed){
   } else if (!tgt){
     setPrompt("It is done", "save the view");
     $("save").disabled = false;
+    setKeys("S to save · ESC to quit");
   }
 }
 
@@ -399,6 +436,7 @@ $("reset").addEventListener("click", ()=>{
   paintRays(); texture=null; morph=0; drawHead();
   $("save").disabled = true;
   setPrompt("Start again", "turn slowly");
+  if (running) setKeys("ESC to quit");
 });
 $("save").addEventListener("click", ()=>{
   texture = buildTexture();
@@ -412,8 +450,18 @@ $("save").addEventListener("click", ()=>{
   setPrompt("Kept", nm ? `${nm.toUpperCase()} — the head below is wearing your face` :
                          "the head below is wearing your face");
   running = false;
+  setCapturing(false);
   if (stream){ stream.getTracks().forEach(t=>t.stop()); stream = null; }
   $("open").disabled = false;
+});
+
+/* Keyboard, for the version of this that runs on a plinth at a show. */
+addEventListener("keydown", e => {
+  if (e.key === "Escape" && (running || stream)){ e.preventDefault(); closeGlass(); return; }
+  const typing = document.activeElement === $("name");
+  if (!typing && (e.key === "s" || e.key === "S") && !$("save").disabled){
+    e.preventDefault(); $("save").click();
+  }
 });
 
 addEventListener("resize", placeFeed);
