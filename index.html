@@ -138,6 +138,15 @@
     max-width:34rem;
   }
 
+  .study .needs{
+    display:block;
+    margin-top:.5rem;
+    font-size:11px;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+
   .study:hover .n,
   .study:focus-visible .n{color:var(--ink);}
 
@@ -176,7 +185,7 @@
   <main>
     <div class="studies-head">
       <h1>Studies</h1>
-      <p class="count">02</p>
+      <p class="count">03</p>
     </div>
 
     <ol>
@@ -186,6 +195,7 @@
           <span>
             <span class="title">Scrollwork</span>
             <span class="desc">A generative radial pattern, built from nested SVG primitives, that reshapes continuously as you scroll.</span>
+            <span class="needs">scroll</span>
           </span>
         </a>
       </li>
@@ -195,6 +205,17 @@
           <span>
             <span class="title">Front Door</span>
             <span class="desc">tristan.design opens on a sixteen-mode visual synthesizer instead of a portfolio grid. A wordmark with two million states, and a choice that follows you across the site.</span>
+            <span class="needs">case study &middot; embeds the live site</span>
+          </span>
+        </a>
+      </li>
+      <li>
+        <a class="study" href="/studies/looking-glass/">
+          <span class="n">03</span>
+          <span>
+            <span class="title">Through The Looking Glass</span>
+            <span class="desc">A capture station for a live performance. The glass takes a face from five angles and wraps them onto one shared head — the same geometry for everybody, made particular by skin alone. Nothing leaves the tab.</span>
+            <span class="needs">camera &middot; nothing leaves your browser</span>
           </span>
         </a>
       </li>

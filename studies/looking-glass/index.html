@@ -1,0 +1,251 @@
+<meta charset="utf-8" />
+<title>Through The Looking Glass — Sea of Grass</title>
+<meta name="description" content="A study for a capture station. Five angles of a face, taken in the browser, wrapped onto one shared head." />
+<link rel="canonical" href="https://seaofgrass.studio/studies/looking-glass/" />
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:site_name" content="Sea of Grass" />
+<meta property="og:url" content="https://seaofgrass.studio/studies/looking-glass/" />
+<meta property="og:title" content="Through The Looking Glass — Sea of Grass" />
+<meta property="og:description" content="Five angles of a face, taken in the browser and wrapped onto one shared head. Nothing leaves the tab." />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --ground:#0a0708; --amber:#ffbe46; --amber-hi:#ffe6b0;
+    --red:#eb3420; --dim:#5c2216;
+    --text:#f0d8b4; --text-soft:rgba(240,216,180,.45);
+    --line:rgba(240,216,180,.18);
+  }
+  *{box-sizing:border-box;}
+  html{background:var(--ground);}
+  body{
+    margin:0;background:var(--ground);color:var(--text);
+    font-family:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
+    overflow-x:hidden;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px;}
+
+  /* the way home — site convention, in this study's own light */
+  .home{
+    position:fixed;left:20px;top:18px;z-index:10;display:block;width:30px;
+    color:var(--text-soft);transition:color .18s ease;
+  }
+  .home:hover,.home:focus-visible{color:var(--amber-hi);}
+  .home svg{display:block;width:100%;height:auto;}
+  @media (max-width:640px){ .home{left:12px;top:12px;width:23px;} }
+
+
+  header{text-align:center;padding:54px 0 10px;}
+  header h1{font-size:13px;letter-spacing:.16em;text-transform:uppercase;font-weight:500;margin:0 0 6px;}
+  header p{font-size:12px;color:var(--text-soft);margin:0;}
+
+  .glass-wrap{display:flex;justify-content:center;padding:18px 0 6px;}
+  .glass{position:relative;width:min(520px,92vw);}
+  .glass svg{width:100%;display:block;overflow:visible;}
+  .stroke{fill:none;stroke-linejoin:round;stroke-linecap:round;}
+  .halo{stroke:var(--red);stroke-width:5;opacity:.85;filter:url(#bloom);}
+  .core{stroke:var(--amber-hi);stroke-width:1.1;}
+  .mid{stroke:var(--red);stroke-width:2.4;}
+  .unlit{stroke:var(--dim);stroke-width:1.6;}
+
+  /* Reflection sits behind the SVG, clipped to the aperture. */
+  #feed{position:absolute;object-fit:cover;background:#000;}
+  video{display:none;}
+
+  .prompt{text-align:center;min-height:52px;padding-top:4px;}
+  .prompt .head{font-size:13px;letter-spacing:.1em;text-transform:uppercase;}
+  .prompt .sub{font-size:12px;color:var(--text-soft);margin-top:4px;}
+
+  .controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:10px 0 4px;}
+  button{
+    font:inherit;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--text);background:transparent;border:1px solid var(--line);
+    padding:9px 16px;cursor:pointer;border-radius:2px;
+  }
+  button:hover:not(:disabled){border-color:var(--amber);color:var(--amber-hi);}
+  button:disabled{opacity:.3;cursor:default;}
+  input[type=text]{
+    font:inherit;font-size:13px;letter-spacing:.1em;text-transform:uppercase;
+    text-align:center;color:var(--amber-hi);background:transparent;
+    border:1px solid var(--line);border-radius:2px;padding:9px 12px;width:190px;
+  }
+  input[type=text]:focus{outline:none;border-color:var(--amber);}
+
+  .privacy{
+    max-width:58ch;margin:14px auto 0;text-align:center;
+    font-size:11.5px;line-height:1.8;color:var(--text-soft);
+  }
+  .privacy strong{color:var(--text);font-weight:400;}
+
+  hr{border:0;border-top:1px solid var(--line);margin:54px 0;}
+
+  .viewer{border:1px solid var(--line);border-radius:3px;padding:16px 18px 20px;}
+  .vhead{display:flex;justify-content:space-between;align-items:baseline;
+         gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+  .vhead h2{font-size:11.5px;letter-spacing:.1em;color:var(--text);font-weight:500;margin:0;}
+  .vhead span{font-size:11px;color:var(--text-soft);font-variant-numeric:tabular-nums;}
+  .head-row{display:flex;gap:30px;align-items:flex-start;flex-wrap:wrap;justify-content:center;}
+  .vstage{display:flex;flex-direction:column;gap:10px;}
+  #head{background:#0d090a;border:1px solid var(--line);border-radius:2px;
+        touch-action:none;cursor:grab;max-width:100%;}
+  #head:active{cursor:grabbing;}
+  .vbar{display:flex;gap:6px;flex-wrap:wrap;}
+  .vbar button{padding:6px 10px;font-size:10.5px;letter-spacing:.06em;}
+  .vbar button.on{border-color:var(--amber);color:var(--amber-hi);}
+  .sliders{min-width:236px;padding-top:2px;}
+  .sliders h3{font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+              color:var(--text);font-weight:500;margin:0 0 12px;}
+  .vnote{font-size:11px;color:var(--text-soft);line-height:1.75;margin:16px 0 0;}
+  .vnote a{color:var(--text-soft);border-bottom:1px solid var(--line);text-decoration:none;}
+  .vnote a:hover{color:var(--amber-hi);}
+  .sl{margin-bottom:13px;}
+  .sl label{display:flex;justify-content:space-between;font-size:11px;color:var(--text-soft);margin-bottom:4px;}
+  .sl input{width:100%;accent-color:var(--amber);}
+  .sl output{color:var(--text);font-variant-numeric:tabular-nums;}
+
+  .note{max-width:64ch;margin:0 auto;padding:10px 0 20vh;font-size:13px;line-height:1.85;color:var(--text-soft);}
+  .note h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text);font-weight:500;margin:34px 0 14px;}
+  .note p{margin:0 0 16px;}
+  .note em{color:var(--text);font-style:normal;}
+  .credit{text-align:center;font-size:12px;color:var(--text-soft);padding-bottom:40px;}
+  .credit a{color:var(--text-soft);text-decoration:none;border-bottom:1px solid var(--line);}
+  .credit a:hover{color:var(--text);}
+  @media (max-width:640px){ .head-row{gap:20px;} }
+</style>
+
+<a class="home" href="/" aria-label="Sea of Grass — all studies">
+  <svg viewBox="43.63 44.56 350.94 258.56" fill="currentColor" aria-hidden="true">
+      <path d="M 60.1360,299.5890 C 40.8560,283.5000 37.9720,248.8600 54.1230,229.1250 C 61.9590,219.4780 73.2066,213.0913 85.9080,212.4050 L 279.9170,212.3880 C 292.7328,211.6894 302.2259,200.5242 302.6140,188.1740 C 303.0171,175.3461 294.1087,163.3937 280.9850,162.4350 L 160.3860,162.3770 C 155.6830,162.3750 152.4580,158.1300 152.2660,154.1930 C 152.0640,150.0420 155.5000,145.5160 160.3230,145.5160 L 323.2740,145.5180 C 363.5090,146.7569 394.2264,180.5210 394.5670,220.2810 C 394.9023,259.4236 360.4620,297.7100 320.2520,299.1580 C 320.2520,299.1580 69.9310,307.7640 60.1360,299.5890 Z"/>
+      <path d="M 365.1390,47.9780 C 360.1170,47.5130 354.1470,47.1080 347.4230,46.7550 C 274.7440,42.9430 114.0820,45.2510 114.0820,45.2510 C 73.9994,46.9759 43.7290,80.8860 43.6260,120.3040 C 43.5230,159.4680 73.5199,193.9418 113.3820,195.4730 L 277.3270,195.8440 C 282.2870,195.8440 285.7460,192.0070 285.9600,187.6500 C 286.1670,183.4310 282.8680,178.9500 277.9760,178.9480 L 158.2750,178.9140 C 145.3037,178.2644 135.8119,166.8014 135.6040,154.2420 C 135.3960,141.6768 144.3477,129.9059 157.2620,128.9900 L 350.1640,128.8050 C 352.3160,128.8030 354.4280,128.6110 356.4990,128.2740 C 366.7370,126.6070 375.8830,121.0490 382.8160,113.4590 C 390.0330,105.5580 394.4238,95.7293 394.5320,85.6870 C 394.7250,67.7708 381.6430,52.8390 365.1390,47.9780 Z"/>
+      <circle cx="357.983" cy="86.686" r="36.548"/>
+  </svg>
+</a>
+
+<div class="wrap">
+  <header>
+    <h1>Through The Looking Glass</h1>
+    <p>a study — five angles of a face, wrapped onto one shared head</p>
+  </header>
+
+  <div class="glass-wrap">
+    <div class="glass" id="glassBox">
+      <canvas id="feed"></canvas>
+      <svg id="glass" viewBox="0 0 600 900">
+        <defs>
+          <filter id="bloom" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="7" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="b"/></feMerge>
+          </filter>
+        </defs>
+        <g id="rays"></g><g id="frame"></g><g id="eye"></g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="prompt">
+    <div class="head" id="pHead">The glass is closed</div>
+    <div class="sub" id="pSub">nothing is running until you open it</div>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="name" placeholder="YOUR NAME" maxlength="18" autocomplete="off">
+    <button id="open">Open the glass</button>
+    <button id="save" disabled>Save the view</button>
+    <button id="reset" disabled>Start over</button>
+  </div>
+
+  <p class="privacy">
+    <strong>Nothing leaves this tab.</strong> The camera is only opened when you
+    press the button, detection runs locally in your browser, and no image,
+    texture or measurement is uploaded anywhere. Close the page and it is gone.
+  </p>
+
+  <hr>
+
+  <section class="viewer">
+    <div class="vhead">
+      <h2>canonical_face_model.obj</h2>
+      <span id="vstat">loading…</span>
+    </div>
+    <div class="head-row">
+      <div class="vstage">
+        <canvas id="head" width="460" height="460"></canvas>
+        <div class="vbar">
+          <button class="mode on" data-mode="clay">Clay</button>
+          <button class="mode" data-mode="wire">Wireframe</button>
+          <button class="mode" data-mode="points">Points</button>
+          <button class="mode" data-mode="tex" id="mTex" disabled>Texture</button>
+          <button id="vreset">Reset view</button>
+        </div>
+      </div>
+
+      <div class="sliders">
+        <h3>Manipulate</h3>
+        <div class="sl"><label>turn <output id="o-yaw">0°</output></label>
+          <input type="range" id="s-yaw" min="-70" max="70" value="0"></div>
+        <div class="sl"><label>tilt <output id="o-pitch">0°</output></label>
+          <input type="range" id="s-pitch" min="-40" max="40" value="0"></div>
+        <div class="sl"><label>zoom <output id="o-zoom">1.00</output></label>
+          <input type="range" id="s-zoom" min="60" max="220" value="92"></div>
+        <h3 style="margin-top:22px">Deform</h3>
+        <div class="sl"><label>smile <output id="o-smile">0</output></label>
+          <input type="range" id="s-smile" min="0" max="100" value="0"></div>
+        <div class="sl"><label>jaw <output id="o-jaw">0</output></label>
+          <input type="range" id="s-jaw" min="0" max="100" value="0"></div>
+        <div class="sl"><label>brow <output id="o-brow">0</output></label>
+          <input type="range" id="s-brow" min="0" max="100" value="0"></div>
+        <div class="sl"><label>blink <output id="o-blink">0</output></label>
+          <input type="range" id="s-blink" min="0" max="100" value="0"></div>
+        <div class="sl"><label>squint <output id="o-squint">0</output></label>
+          <input type="range" id="s-squint" min="0" max="100" value="0"></div>
+        <p class="vnote">
+          Drag the model to orbit, scroll to zoom. Save a view above and the
+          Texture mode lights up — the same geometry, wearing a face.
+          <a href="./canonical_face_model.obj" download>download the .obj</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="note">
+    <h2>Note</h2>
+    <p>
+      A study for a capture station built for a live performance. Someone steps
+      up, gives a name, and turns their head slowly while the glass takes them
+      from five angles.
+    </p>
+    <p>
+      <em>Progress is the rays.</em> One for each angle, dark until it is taken,
+      so the sunburst completes as the glass finishes learning. A bar filling
+      would have carried the same information and none of the meaning.
+    </p>
+    <h2>On the head</h2>
+    <p>
+      The head below is not a model of you. It is the same 468-vertex shape for
+      everybody, and it never changes. What changes is the texture wrapped onto
+      it — and that alone is enough to read as a particular person.
+    </p>
+    <p>
+      That is the whole bet the project rests on. Recognition lives in skin,
+      brows, the specific arrangement of features; head shape carries far less
+      than intuition suggests. The study exists to let you watch one generic
+      head become someone, without its geometry moving at all.
+    </p>
+    <p>
+      Expression is procedural — five deformations of named landmark groups,
+      each falling off smoothly into the surrounding surface. It is not a
+      recording of your face moving. It is the shared head, doing what you ask.
+    </p>
+  </div>
+
+  <p class="credit">a study · <a href="/">sea of grass</a></p>
+</div>
+
+<video id="video" playsinline muted></video>
+<script type="module" src="./app.js"></script>

@@ -2,3 +2,8 @@
 Thumbs.db
 node_modules/
 *.log
+
+# Never publish business or personal paperwork from this working directory.
+# This repo is public and Pages serves everything in it.
+Business Info/
+*.pdf
