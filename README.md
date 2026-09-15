@@ -14,7 +14,6 @@ studies/
   front-door/index.html       Study 02 — self-contained, ~29 KB
   looking-glass/              Study 03 — page + 2 modules + 3.8 MB of models
   packfold/                   Study 04 — notes, the toy it embeds, and a sample .dxf
-  superdownloader/index.html  Study 05 — self-contained, ~17 KB
 assets/
   logo.svg                    the mark, fill="currentColor" (inherits type color)
   favicon.svg                 same mark, explicit fill, a little padding
