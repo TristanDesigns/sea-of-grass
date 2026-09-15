@@ -11,7 +11,8 @@ you are looking at the real thing.
 index.html                    landing page: the mark, and the index of studies
 studies/
   scrollwork/index.html       Study 01 — self-contained, ~10 KB
-  front-door/index.html       Study 02 — self-contained, ~18 KB
+  front-door/index.html       Study 02 — self-contained, ~29 KB
+  looking-glass/              Study 03 — page + 2 modules + 3.8 MB of models
 assets/
   logo.svg                    the mark, fill="currentColor" (inherits type color)
   favicon.svg                 same mark, explicit fill, a little padding
@@ -36,11 +37,20 @@ Push to `main` — GitHub Pages rebuilds automatically. There is nothing else to
 
 ## How a study works
 
-Each study is one self-contained HTML file: its own CSS and JS inline, no shared
-stylesheet, no framework. That constraint is the point — a study should be readable
-top to bottom in one sitting, and should still run in ten years.
+Each study is a self-contained **directory** — usually just one HTML file with its CSS
+and JS inline, no shared stylesheet, no framework. A study that genuinely needs data
+(a mesh, a model file, ES modules) keeps it alongside its page rather than reaching
+into a shared folder. The constraint is that a study never depends on another study,
+and never on a build step.
 
-Shared conventions across the site, rather than shared code:
+Study 03 is the first to need more than one file, and the first with an external
+runtime dependency (MediaPipe, from a CDN). Both are real costs against "should still
+run in ten years" — worth paying here, worth noticing when it happens again.
+
+Shared conventions across the site, rather than shared code. These are the default,
+not a uniform — a study that is a designed world of its own may set its own palette
+(Study 03 is amber-on-black, and converting it to paper would destroy it). What no
+study skips: the mark linking home, and crediting any adapted technique on the page.
 
 | | |
 |---|---|
@@ -63,10 +73,13 @@ the page**, not in a comment. Scrollwork does this and it should stay the rule.
 
 ## Adding a study
 
-1. `studies/<name>/index.html` — self-contained.
+1. `studies/<name>/index.html`, plus any data it needs, in that directory.
 2. Link the mark back to `/` in the top-left, so the study is never a dead end.
+   Use a root-relative `/`, not `../` — `../` resolves to `/studies/`, which has no page.
 3. Add a row to the `<ol>` in the root `index.html` and bump the count in
    `.studies-head`.
+4. If it asks for a camera, microphone or location, say on the page what happens to
+   the data, and make sure the code actually matches the claim.
 
 ## Working together
 
