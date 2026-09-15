@@ -170,7 +170,25 @@ async function openGlass(){
       outputFaceBlendshapes:true, outputFacialTransformationMatrixes:true});
   }
   $("open").disabled = true; $("reset").disabled = false;
-  running = true; requestAnimationFrame(tick);
+  running = true; setCapturing(true); requestAnimationFrame(tick);
+}
+
+/* The glass looking is a mode, not just a flag: the name field has done its
+ * job, the buttons step back, and the keys line says what is available. */
+function setCapturing(on){
+  $("gui").classList.toggle("capturing", on);
+  if (on) setKeys("ESC to quit");
+}
+
+function setKeys(s){ $("keys").textContent = s; }
+
+function closeGlass(){
+  running = false;
+  setCapturing(false);
+  if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; }
+  $("open").disabled = false;
+  $("reset").disabled = true;
+  setPrompt("The glass is closed", "nothing is running until you open it");
 }
 
 let lastTs = -1;
@@ -233,6 +251,7 @@ function handle(res, v, ctx, feed){
   } else if (!tgt){
     setPrompt("It is done", "save the view");
     $("save").disabled = false;
+    setKeys("S to save · ESC to quit");
   }
 }
 
@@ -417,6 +436,7 @@ $("reset").addEventListener("click", ()=>{
   paintRays(); texture=null; morph=0; drawHead();
   $("save").disabled = true;
   setPrompt("Start again", "turn slowly");
+  if (running) setKeys("ESC to quit");
 });
 $("save").addEventListener("click", ()=>{
   texture = buildTexture();
@@ -430,8 +450,18 @@ $("save").addEventListener("click", ()=>{
   setPrompt("Kept", nm ? `${nm.toUpperCase()} — the head below is wearing your face` :
                          "the head below is wearing your face");
   running = false;
+  setCapturing(false);
   if (stream){ stream.getTracks().forEach(t=>t.stop()); stream = null; }
   $("open").disabled = false;
+});
+
+/* Keyboard, for the version of this that runs on a plinth at a show. */
+addEventListener("keydown", e => {
+  if (e.key === "Escape" && (running || stream)){ e.preventDefault(); closeGlass(); return; }
+  const typing = document.activeElement === $("name");
+  if (!typing && (e.key === "s" || e.key === "S") && !$("save").disabled){
+    e.preventDefault(); $("save").click();
+  }
 });
 
 addEventListener("resize", placeFeed);

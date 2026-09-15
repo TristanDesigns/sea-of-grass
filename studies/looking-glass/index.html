@@ -71,9 +71,13 @@
   .gui > *{pointer-events:auto;}
 
   .prompt{min-height:calc(34px * var(--s,1));}
+  /* The head is the one thing the visitor reads at arm's length while turning,
+     so it gets a serif and a little more size. System stack on purpose — one
+     line of text does not justify a second webfont request. */
   .prompt .head{
-    font-size:calc(13px * var(--s,1));letter-spacing:.12em;text-transform:uppercase;
-    color:var(--amber-hi);line-height:1.3;
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:calc(16px * var(--s,1));letter-spacing:.14em;text-transform:uppercase;
+    color:var(--amber-hi);line-height:1.25;
   }
   .prompt .sub{
     font-size:calc(11.5px * var(--s,1));color:var(--text-soft);
@@ -114,6 +118,21 @@
   .gui.tight .prompt .sub{font-size:calc(10.5px * var(--s,1));}
   .gui.tight input[type=text]{width:calc(140px * var(--s,1));}
   .gui.tight .btns{flex-wrap:nowrap;}
+
+  /* While the glass is looking, the name field has done its job and the
+     buttons step back. They stay on screen rather than vanishing, because
+     a touch visitor has no ESC key. */
+  .keys{
+    font-size:calc(10px * var(--s,1));letter-spacing:.1em;
+    color:var(--text-soft);opacity:0;transition:opacity .2s ease;
+  }
+  .gui.capturing .keys{opacity:1;}
+  .gui.capturing input[type=text]{display:none;}
+  .gui.capturing button{opacity:.45;}
+  .gui.capturing button:hover:not(:disabled),
+  .gui.capturing button:focus-visible{opacity:1;}
+
+  @media (prefers-reduced-motion:reduce){ .keys{transition:none;} }
 
   .privacy{
     max-width:58ch;margin:14px auto 0;text-align:center;
@@ -198,6 +217,8 @@
             <button id="reset" disabled><span class="wide">Start over</span><span class="narrow">Reset</span></button>
           </div>
         </div>
+
+        <div class="keys" id="keys">ESC to quit</div>
       </div>
     </div>
   </div>
