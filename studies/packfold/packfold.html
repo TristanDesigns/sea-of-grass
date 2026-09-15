@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Packfold — folding carton</title>
+<meta name="description" content="A folding carton built from DOM elements: paint the panels, wrap your own artwork across the sheet, and export the dieline as a real two-layer DXF.">
+<style>
+/* ==========================================================================
+   Packfold — the folding carton from the US Display Group case study,
+   lifted out to run on its own.
+
+   Self-contained on purpose: no webfonts, no libraries, no external
+   requests of any kind. Drop the file on any host, or paste the three
+   parts (style / markup / script) into a page you already have.
+   Swap --ui-font below for your own stack if you want it to match.
+   ========================================================================== */
+*{box-sizing:border-box}
+:root{
+  --canvas:#f5f5f5; --paper-w:#ffffff; --surface-alt:#fafafa;
+  --ink-1:#0a0a0a; --mid:#6b727c; --hairline:#e5e5e5;
+  --shadow-card:0 0 0 1px rgba(23,23,23,.05), 0 1px 3px rgba(0,0,0,.1), 0 1px 2px -1px rgba(0,0,0,.1);
+  --ui-font:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+html,body{height:100%}
+body{margin:0;background:var(--canvas);color:var(--ink-1);
+  font-family:var(--ui-font);font-size:14px;line-height:1.43;
+  -webkit-font-smoothing:antialiased;
+  display:flex;align-items:center;justify-content:center;padding:24px}
+.pf-wrap{width:100%;max-width:560px}
+.pf-frame{height:min(78vh,620px);min-height:440px}
+/* on a phone the carton fits to width, so a tall frame is mostly empty grid */
+@media (max-width:560px){.pf-frame{height:min(62vh,470px);min-height:380px}}
+.pf-title{margin:0 0 4px;font-size:15px;font-weight:600;letter-spacing:-.01em}
+.pf-sub{margin:0 0 16px;font-size:13px;color:var(--mid);max-width:52ch}
+.pf-foot{margin:14px 0 0;font-size:12px;color:var(--mid)}
+
+/* ---- hero fold demo: flat dieline -> folded carton -------------------
+   A stripped-down Packfold. Pure CSS 3D: every panel is a div hinged off
+   its neighbour, exactly the hinge tree a real carton folds along. The
+   page's thesis as an object you can scrub. ------------------------- */
+.pf-card{--pf-edge:#d4d4d4;
+  position:relative;height:100%;background:var(--paper-w);border:1px solid var(--hairline);
+  border-radius:24px;box-shadow:var(--shadow-card);display:flex;flex-direction:column;overflow:hidden}
+.pf-scene{flex:1;min-height:0;position:relative;perspective:1100px;perspective-origin:50% 46%;
+  background:
+    linear-gradient(var(--hairline) 1px,transparent 1px) 0 0/26px 26px,
+    linear-gradient(90deg,var(--hairline) 1px,transparent 1px) 0 0/26px 26px,
+    var(--surface-alt)}
+.pf-stage{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d}
+.pf-p{position:absolute;transform-style:preserve-3d;background:var(--pf-base,#ffffff);
+  --pf-base:#ffffff;--pf-shade:0;
+  border:1px solid var(--pf-edge);box-sizing:border-box;cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+/* the shading is a tint laid over the panel rather than the panel's own
+   colour, so a painted face or a piece of uploaded artwork keeps the same
+   sense of light falling on it */
+.pf-p::after{content:'';position:absolute;inset:0;background:#000;
+  opacity:var(--pf-shade);pointer-events:none}
+/* Faces shade by which way they end up pointing, so the folded carton reads
+   as a solid even though the whole ramp stays neutral. On the flat sheet the
+   same shading colour-codes the panels, the way a dieline proof does. */
+.pf-p.rear{--pf-shade:.03}
+.pf-p.side{--pf-shade:.09}
+.pf-p.flap{--pf-shade:.13}
+.pf-p.lid{--pf-shade:.19}
+.pf-lbl{font-family:'Geist',ui-sans-serif,system-ui,sans-serif;font-size:9px;font-weight:500;
+  letter-spacing:.06em;text-transform:uppercase;color:#404040;opacity:var(--lab,1);
+  user-select:none;pointer-events:none;white-space:nowrap;
+  /* a panel can be painted any colour now, so the name rides on its own chip */
+  background:rgba(255,255,255,.82);padding:2px 6px;border-radius:4px}
+
+.pf-tools{display:flex;align-items:center;gap:10px;padding:10px 20px;flex:none;flex-wrap:wrap;
+  border-top:1px solid var(--hairline);background:var(--paper-w)}
+.pf-swatches{display:flex;align-items:center;gap:6px;margin-right:auto}
+/* the swatches are ink on the carton, not chrome: this is the one place in
+   the system where colour is content the reader chooses */
+.pf-sw{width:22px;height:22px;padding:0;border:1px solid var(--hairline);border-radius:6px;cursor:pointer}
+.pf-sw.is-on{outline:2px solid var(--ink-1);outline-offset:2px}
+.pf-sw:focus-visible{outline:2px solid var(--ink-1);outline-offset:2px}
+.pf-pick{width:22px;height:22px;padding:0;border:1px solid var(--hairline);border-radius:6px;
+  background:var(--paper-w);cursor:pointer}
+.pf-pick::-webkit-color-swatch-wrapper{padding:2px}
+.pf-pick::-webkit-color-swatch{border:none;border-radius:4px}
+.pf-btn{font-family:'Geist',ui-sans-serif,system-ui,sans-serif;font-size:12px;font-weight:500;line-height:1.4;
+  color:var(--ink-1);background:var(--canvas);border:none;border-radius:18px;padding:6px 12px;cursor:pointer}
+.pf-btn:hover{background:var(--hairline)}
+.pf-btn:focus-visible{outline:2px solid var(--ink-1);outline-offset:2px}
+@media (max-width:860px){.pf-tools{padding:10px 16px}}
+
+.pf-ctl{display:flex;align-items:center;gap:14px;padding:14px 20px;border-top:1px solid var(--hairline);
+  background:var(--paper-w);flex:none}
+.pf-end{font-size:12px;font-weight:500;color:var(--mid);flex:none}
+.pf-pct{font-size:12px;font-weight:500;color:var(--ink-1);flex:none;min-width:34px;text-align:right;
+  font-variant-numeric:tabular-nums}
+.pf-range{-webkit-appearance:none;appearance:none;flex:1;min-width:0;height:16px;background:transparent;
+  cursor:pointer;margin:0;padding:0}
+.pf-range::-webkit-slider-runnable-track{height:2px;background:var(--hairline);border-radius:2px}
+.pf-range::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--ink-1);border:none;margin-top:-6px}
+.pf-range::-moz-range-track{height:2px;background:var(--hairline);border-radius:2px}
+.pf-range::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--ink-1);border:none}
+.pf-range:focus-visible{outline:2px solid var(--ink-1);outline-offset:4px;border-radius:4px}
+
+/* panel geometry — the flat net, in px */
+#pf-front{left:0;top:0;width:150px;height:130px}
+#pf-tuck{left:11px;top:-62px;width:128px;height:62px;transform-origin:50% 100%;
+  border-top-left-radius:26px;border-top-right-radius:26px}
+#pf-fbot{left:0;top:130px;width:150px;height:58px;transform-origin:50% 0}
+#pf-right{left:150px;top:0;width:95px;height:130px;transform-origin:0 50%}
+#pf-rdust{left:14px;top:-40px;width:66px;height:40px;transform-origin:50% 100%}
+#pf-rbot{left:0;top:130px;width:95px;height:58px;transform-origin:50% 0}
+#pf-back{left:95px;top:0;width:150px;height:130px;transform-origin:0 50%}
+#pf-btop{left:0;top:-18px;width:150px;height:18px;transform-origin:50% 100%}
+#pf-bbot{left:0;top:130px;width:150px;height:58px;transform-origin:50% 0}
+#pf-left{left:150px;top:0;width:95px;height:130px;transform-origin:0 50%}
+#pf-ldust{left:14px;top:-40px;width:66px;height:40px;transform-origin:50% 100%}
+#pf-lbot{left:0;top:130px;width:95px;height:58px;transform-origin:50% 0}
+#pf-glue{left:95px;top:0;width:22px;height:130px;transform-origin:0 50%}
+
+@media (max-width:860px){.pf-ctl{padding:12px 16px;gap:10px}}
+
+/* the case-study lede kept a pale lilac from the old purple band; on the
+   canvas it read as a ghost */
+.case-lede{color:var(--mid) !important;font-size:16px !important;line-height:1.55}
+.case-lede strong{color:var(--ink-1) !important;font-weight:600}
+
+/* ---- open sections: the fold head without the toggle ----------------
+   The work is not hidden behind anything. Only the brief keeps folds,
+   and those are the small nested ones inside it. ------------------- */
+.open-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px 22px;align-items:start;padding:6px 0}
+.open-head .fold-title h2{font-size:clamp(26px,3.6vw,40px)}
+.open-body{padding-top:36px}
+@media (max-width:640px){.open-head{grid-template-columns:minmax(0,1fr);gap:12px}
+  .open-head .fold-num{display:none}}
+
+/* the card's own font, kept local to the widget */
+.pf-card,.pf-card button,.pf-card input{font-family:var(--ui-font)}
+.pf-lbl{font-family:var(--ui-font) !important}
+.pf-btn{font-family:var(--ui-font) !important}
+@media (prefers-reduced-motion:reduce){.pf-stage,.pf-p{transition:none !important}}
+</style>
+</head>
+<body>
+
+<div class="pf-wrap">
+  <h1 class="pf-title">Packfold</h1>
+  <p class="pf-sub">Drag <b>Flat → Folded</b> to close the carton. Pick an ink and click a panel to fill it, or <b>Fill&nbsp;all</b> to flood the box. <b>Image</b> wraps one picture across the whole flat sheet. <b>.DXF</b> downloads the real dieline.</p>
+
+  <div class="pf-frame">
+  <div class="pf-card">
+          <div class="pf-scene" id="pf-scene" title="Click a panel to fill it with the selected ink">
+            <div class="pf-stage" id="pf-stage"><div class="pf-p" id="pf-front"><span class="pf-lbl">Front</span><div class="pf-p flap lid" id="pf-tuck"><span class="pf-lbl">Tuck</span></div><div class="pf-p flap" id="pf-fbot"><span class="pf-lbl">Bottom</span></div><div class="pf-p side" id="pf-right"><span class="pf-lbl">R</span><div class="pf-p flap lid" id="pf-rdust"></div><div class="pf-p flap" id="pf-rbot"></div><div class="pf-p rear" id="pf-back"><span class="pf-lbl">Back</span><div class="pf-p flap lid" id="pf-btop"></div><div class="pf-p flap" id="pf-bbot"><span class="pf-lbl">Bottom</span></div><div class="pf-p side" id="pf-left"><span class="pf-lbl">L</span><div class="pf-p flap lid" id="pf-ldust"></div><div class="pf-p flap" id="pf-lbot"></div><div class="pf-p flap lid" id="pf-glue"></div></div></div></div></div></div>
+          </div>
+          <div class="pf-tools">
+            <div class="pf-swatches" id="pf-swatches" role="group" aria-label="Ink"></div>
+            <button type="button" class="pf-btn" id="pf-fill">Fill all</button>
+            <button type="button" class="pf-btn" id="pf-img-btn">Image</button>
+            <input type="file" id="pf-img" accept="image/*" hidden>
+            <button type="button" class="pf-btn" id="pf-dxf">.DXF</button>
+          </div>
+          <div class="pf-ctl">
+            <span class="pf-end">Flat</span>
+            <input class="pf-range" id="pf-range" type="range" min="0" max="100" value="0" step="1"
+                   aria-label="Fold the carton, flat sheet to finished box">
+            <span class="pf-end">Folded</span>
+            <span class="pf-pct" id="pf-pct">0%</span>
+          </div>
+        </div>
+  </div>
+
+  <p class="pf-foot">Board is the reset ink. The DXF exports on two layers, CUT and CREASE, at 25px to the inch.</p>
+</div>
+
+<script>
+/* Hero fold demo — a stripped-down Packfold in CSS 3D.
+   Each entry is a hinge: which axis it turns on, its finished angle, how
+   deep it sits in the fold order (so the box assembles outward-in), and a
+   sub-pixel z-offset that keeps the four coplanar bottom flaps from
+   fighting each other for depth. */
+(function(){
+  var stage = document.getElementById('pf-stage');
+  var scene = document.getElementById('pf-scene');
+  var range = document.getElementById('pf-range');
+  var pct   = document.getElementById('pf-pct');
+  if(!stage || !scene || !range) return;
+
+  var HINGES = [
+    {id:'pf-tuck',  axis:'X', to:-105, d:1, z:2.4},
+    {id:'pf-fbot',  axis:'X', to:-90,  d:1, z:0},
+    {id:'pf-right', axis:'Y', to:90,   d:1, z:0},
+    {id:'pf-rdust', axis:'X', to:-90,  d:2, z:0.8},
+    {id:'pf-rbot',  axis:'X', to:-90,  d:2, z:0.6},
+    {id:'pf-back',  axis:'Y', to:90,   d:2, z:0},
+    {id:'pf-btop',  axis:'X', to:-90,  d:3, z:1.6},
+    {id:'pf-bbot',  axis:'X', to:-90,  d:3, z:1.2},
+    {id:'pf-left',  axis:'Y', to:90,   d:3, z:0},
+    {id:'pf-ldust', axis:'X', to:-90,  d:4, z:0.8},
+    {id:'pf-lbot',  axis:'X', to:-90,  d:4, z:1.8},
+    {id:'pf-glue',  axis:'Y', to:90,   d:4, z:0}
+  ].map(function(h){ h.el = document.getElementById(h.id); return h; })
+   .filter(function(h){ return h.el; });
+
+  var NET_W = 512, NET_H = 250;          /* the flat sheet */
+  var fitFlat = 0.7, fitBox = 1;
+  function measure(){
+    var w = scene.clientWidth, h = scene.clientHeight;
+    if(!w || !h) return;
+    fitFlat = Math.min((w - 40) / NET_W, (h - 40) / NET_H, 0.92);
+    fitBox  = Math.min(fitFlat * 1.55, (h - 40) / 210, 1.25);
+  }
+
+  function smooth(x){ return x*x*(3 - 2*x); }
+  function clamp01(x){ return x < 0 ? 0 : x > 1 ? 1 : x; }
+  function lerp(a,b,k){ return a + (b-a)*k; }
+
+  function apply(t){
+    var e = smooth(clamp01(t));
+    stage.style.transform =
+      'scale(' + lerp(fitFlat, fitBox, e) + ') ' +
+      'rotateX(' + lerp(0, -15, e) + 'deg) ' +
+      'rotateY(' + lerp(0, -28, e) + 'deg) ' +
+      'translate3d(' + lerp(-NET_W/2, -102, e) + 'px,' + lerp(-63, -58, e) + 'px,0)';
+    stage.style.setProperty('--lab', String(clamp01(1 - t*2.4)));
+    for(var i=0;i<HINGES.length;i++){
+      var h = HINGES[i];
+      var local = smooth(clamp01(t*1.7 - h.d*0.13));
+      h.el.style.transform = 'rotate' + h.axis + '(' + (h.to*local) + 'deg)' +
+                             (h.z ? ' translateZ(' + h.z + 'px)' : '');
+    }
+  }
+
+  var t = 0;
+  function set(v, fromUser){
+    t = clamp01(v);
+    apply(t);
+    var p = Math.round(t*100);
+    pct.textContent = p + '%';
+    if(!fromUser) range.value = p;
+  }
+  range.addEventListener('input', function(){ stopPlay(); set(+range.value/100, true); });
+  addEventListener('resize', function(){ measure(); apply(t); }, {passive:true});
+
+  /* fold itself once, the first time it is looked at */
+  var raf = null;
+  function stopPlay(){ if(raf){ cancelAnimationFrame(raf); raf = null; } }
+  function play(){
+    var start = 0;
+    stopPlay();
+    raf = requestAnimationFrame(function step(ts){
+      if(!start) start = ts;
+      var v = Math.min((ts - start)/2400, 1);
+      set(v);
+      if(v < 1) raf = requestAnimationFrame(step); else raf = null;
+    });
+  }
+
+  /* The scene is sized by flexbox inside an absolutely-positioned card, so
+     its box can settle well after this script runs (and again on every
+     resize). Watch it directly rather than measuring once and hoping. */
+  measure();
+  if(window.ResizeObserver){
+    new ResizeObserver(function(){ measure(); apply(t); }).observe(scene);
+  }
+  var still = matchMedia('(prefers-reduced-motion: reduce)');
+  if(still.matches){
+    set(1);
+  } else {
+    set(0);
+    var seen = false;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting && !seen){ seen = true; io.disconnect(); setTimeout(play, 450); }
+      });
+    }, {threshold:0.35});
+    io.observe(scene);
+  }
+})();
+</script>
+
+<script>
+/* Paint strip for the hero carton.
+   Pick an ink, click a panel to fill it, "Fill all" floods the box. "Image"
+   wraps one picture across the whole flat sheet, so it folds onto the faces
+   the way printed artwork does. ".DXF" writes the real dieline out as a
+   two-layer CAD file — CUT and CREASE — at 25px to the inch. */
+(function () {
+  var swWrap = document.getElementById('pf-swatches');
+  var stage = document.getElementById('pf-stage');
+  if (!swWrap || !stage) return;
+
+  /* the flat sheet, in the same px the CSS lays the panels out in */
+  var NET = [
+    ['pf-front',   0,    0, 150, 130], ['pf-tuck',   11,  -62, 128,  62],
+    ['pf-fbot',    0,  130, 150,  58], ['pf-right', 150,    0,  95, 130],
+    ['pf-rdust', 164,  -40,  66,  40], ['pf-rbot',  150,  130,  95,  58],
+    ['pf-back',  245,    0, 150, 130], ['pf-btop',  245,  -18, 150,  18],
+    ['pf-bbot',  245,  130, 150,  58], ['pf-left',  395,    0,  95, 130],
+    ['pf-ldust', 409,  -40,  66,  40], ['pf-lbot',  395,  130,  95,  58],
+    ['pf-glue',  490,    0,  22, 130]
+  ];
+  var NET_W = 512, NET_TOP = -62, NET_BOT = 188;
+
+  var INKS = [
+    ['#ffffff', 'Board'],
+    ['#0a0a0a', 'Black'],
+    ['#d64545', 'Red'],
+    ['#e8a33d', 'Amber'],
+    ['#2f6f4e', 'Green'],
+    ['#2f5fb3', 'Blue']
+  ];
+  var ink = INKS[0][0];
+
+  function panels() { return stage.querySelectorAll('.pf-p'); }
+
+  function paint(el, colour) { el.style.setProperty('--pf-base', colour); }
+
+  function fillAll(colour) {
+    panels().forEach(function (p) { paint(p, colour); });
+    if (colour === '#ffffff') clearArt();
+  }
+
+  /* ---- swatches ------------------------------------------------------- */
+  var picker;
+  function select(colour, btn) {
+    ink = colour;
+    swWrap.querySelectorAll('.pf-sw').forEach(function (b) { b.classList.toggle('is-on', b === btn); });
+  }
+  INKS.forEach(function (pair, i) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pf-sw' + (i === 0 ? ' is-on' : '');
+    b.style.background = pair[0];
+    b.title = pair[1];
+    b.setAttribute('aria-label', pair[1] + ' ink');
+    b.addEventListener('click', function () { select(pair[0], b); });
+    swWrap.appendChild(b);
+  });
+  picker = document.createElement('input');
+  picker.type = 'color';
+  picker.className = 'pf-pick';
+  picker.value = '#8a4fbd';
+  picker.title = 'Custom ink';
+  picker.setAttribute('aria-label', 'Custom ink');
+  picker.addEventListener('input', function () { select(picker.value, null); picker.classList.add('is-on'); });
+  picker.addEventListener('click', function () { select(picker.value, null); picker.classList.add('is-on'); });
+  swWrap.addEventListener('click', function (e) {
+    if (e.target !== picker) picker.classList.remove('is-on');
+  });
+  swWrap.appendChild(picker);
+
+  /* ---- click a panel to fill it --------------------------------------- */
+  stage.addEventListener('click', function (e) {
+    var p = e.target.closest ? e.target.closest('.pf-p') : null;
+    if (!p || !stage.contains(p)) return;
+    e.stopPropagation();
+    paint(p, ink);
+  });
+
+  document.getElementById('pf-fill').addEventListener('click', function () { fillAll(ink); });
+
+  /* ---- your own artwork, wrapped across the sheet ---------------------- */
+  function clearArt() {
+    panels().forEach(function (p) {
+      p.style.backgroundImage = '';
+      p.style.backgroundSize = '';
+      p.style.backgroundPosition = '';
+    });
+  }
+  function applyArt(url) {
+    NET.forEach(function (r) {
+      var el = document.getElementById(r[0]);
+      if (!el) return;
+      el.style.backgroundImage = 'url("' + url + '")';
+      el.style.backgroundSize = NET_W + 'px ' + (NET_BOT - NET_TOP) + 'px';
+      el.style.backgroundPosition = (-r[1]) + 'px ' + (-(r[2] - NET_TOP)) + 'px';
+    });
+  }
+  var file = document.getElementById('pf-img');
+  document.getElementById('pf-img-btn').addEventListener('click', function () { file.click(); });
+  file.addEventListener('change', function () {
+    var f = file.files && file.files[0];
+    if (!f) return;
+    var fr = new FileReader();
+    fr.onload = function () { applyArt(fr.result); };
+    fr.readAsDataURL(f);
+    file.value = '';
+  });
+
+  /* ---- the dieline, as DXF -------------------------------------------- */
+  var PPI = 25;                       /* 25px to the inch */
+  /* every line the board is scored on, rather than cut */
+  var CREASE = [
+    ['v', 150, 0, 130], ['v', 245, 0, 130], ['v', 395, 0, 130], ['v', 490, 0, 130],
+    ['h', 0, 11, 139], ['h', 0, 164, 230], ['h', 0, 245, 395], ['h', 0, 409, 475],
+    ['h', 130, 0, 150], ['h', 130, 150, 245], ['h', 130, 245, 395], ['h', 130, 395, 490]
+  ];
+
+  /* [a0,a1] with every span in `cuts` taken out of it */
+  function subtract(a0, a1, cuts) {
+    var segs = [[a0, a1]];
+    cuts.forEach(function (c) {
+      var out = [];
+      segs.forEach(function (s) {
+        if (c[1] <= s[0] || c[0] >= s[1]) { out.push(s); return; }
+        if (c[0] > s[0]) out.push([s[0], c[0]]);
+        if (c[1] < s[1]) out.push([c[1], s[1]]);
+      });
+      segs = out;
+    });
+    return segs;
+  }
+
+  function line(layer, x1, y1, x2, y2) {
+    /* DXF counts Y upward, CSS counts it down */
+    function X(v) { return (v / PPI).toFixed(4); }
+    function Y(v) { return ((NET_BOT - v) / PPI).toFixed(4); }
+    return ['0', 'LINE', '8', layer, '10', X(x1), '20', Y(y1), '30', '0.0',
+            '11', X(x2), '21', Y(y2), '31', '0.0'].join('\n') + '\n';
+  }
+
+  function buildDXF() {
+    var out = ['0', 'SECTION', '2', 'ENTITIES'].join('\n') + '\n';
+    CREASE.forEach(function (c) {
+      out += c[0] === 'v' ? line('CREASE', c[1], c[2], c[1], c[3])
+                          : line('CREASE', c[2], c[1], c[3], c[1]);
+    });
+    NET.forEach(function (r) {
+      var x = r[1], y = r[2], w = r[3], h = r[4];
+      [['h', y, x, x + w], ['h', y + h, x, x + w],
+       ['v', x, y, y + h], ['v', x + w, y, y + h]].forEach(function (e) {
+        var on = CREASE.filter(function (c) { return c[0] === e[0] && c[1] === e[1]; })
+                       .map(function (c) { return [c[2], c[3]]; });
+        subtract(e[2], e[3], on).forEach(function (s) {
+          out += e[0] === 'v' ? line('CUT', e[1], s[0], e[1], s[1])
+                              : line('CUT', s[0], e[1], s[1], e[1]);
+        });
+      });
+    });
+    return out + ['0', 'ENDSEC', '0', 'EOF'].join('\n') + '\n';
+  }
+
+  document.getElementById('pf-dxf').addEventListener('click', function () {
+    var blob = new Blob([buildDXF()], { type: 'application/dxf' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'packfold-tuck-carton-dieline.dxf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+  });
+})();
+</script>
+
+</body>
+</html>

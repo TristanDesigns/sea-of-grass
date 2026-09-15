@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Packfold — Sea of Grass</title>
+<meta name="description" content="Study 04. A folding carton built from DOM elements that also writes a real two-layer CAD dieline — the toy and the cutting file are the same description." />
+<link rel="canonical" href="https://seaofgrass.studio/studies/packfold/" />
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+
+<meta property="og:type" content="article" />
+<meta property="og:site_name" content="Sea of Grass" />
+<meta property="og:url" content="https://seaofgrass.studio/studies/packfold/" />
+<meta property="og:title" content="Packfold — Sea of Grass" />
+<meta property="og:description" content="Fold a carton in the browser, then export the dieline as a CAD file a cutter will accept. One geometry, three readings." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+/* ============================================================
+   Study 04 — Packfold.
+   Site tokens; prose in Plex Sans, craft in Plex Mono.
+   The dieline figure is redrawn monochrome: cut is solid ink,
+   crease is dashed. No accent colour anywhere on this site.
+   ============================================================ */
+
+:root{
+  --paper:#faf9f6;
+  --ink:#141311;
+  --line:#d9d6cf;
+  --ink-soft:rgba(20,19,17,.5);
+  --ink-mid:rgba(20,19,17,.58);
+  --cell:#ffffff;
+  --board:#ebe8df;
+  --board-2:#ddd8ca;
+  --sans:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
+}
+
+*{box-sizing:border-box;}
+html{background:var(--paper);-webkit-text-size-adjust:100%;}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-size:15px;line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+
+.wrap{max-width:52rem;margin:0 auto;padding:0 clamp(1.25rem,5vw,2rem);}
+a{color:inherit;text-underline-offset:3px;text-decoration-thickness:1px;}
+a:focus-visible{outline:1px solid var(--ink);outline-offset:4px;}
+
+/* ---------- the way home ---------- */
+
+.home{
+  display:inline-block;width:30px;color:var(--ink-soft);
+  transition:color .18s ease;padding-top:clamp(2rem,6vh,3.25rem);
+}
+.home:hover,.home:focus-visible{color:var(--ink);}
+.home svg{display:block;width:100%;height:auto;}
+
+/* ---------- live embed ---------- */
+
+.demo{margin:2.25rem 0 0;}
+.demo-frame{
+  position:relative;border:1px solid var(--line);background:var(--cell);
+  height:680px;overflow:hidden;
+}
+.demo-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;}
+.demo-cap{
+  display:flex;justify-content:space-between;gap:.4rem 1.5rem;flex-wrap:wrap;
+  margin-top:.6rem;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-soft);
+}
+.demo-cap a{text-decoration:none;border-bottom:1px solid var(--line);}
+.demo-cap a:hover,.demo-cap a:focus-visible{color:var(--ink);}
+@media (max-width:640px){ .demo-frame{height:560px;} }
+
+/* ---------- masthead ---------- */
+
+.top{padding:2.25rem 0 2.5rem;border-bottom:1px solid var(--line);}
+.kicker{
+  font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-soft);margin:0 0 1.25rem;
+}
+h1{
+  font-size:clamp(28px,5.2vw,42px);line-height:1.1;letter-spacing:-.022em;
+  font-weight:600;margin:0 0 1.1rem;text-wrap:balance;
+}
+.standfirst{
+  font-size:17px;line-height:1.6;color:var(--ink-soft);
+  max-width:58ch;margin:0;text-wrap:pretty;
+}
+.meta{
+  display:flex;flex-wrap:wrap;gap:.5rem 1.75rem;margin-top:1.9rem;
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--ink-soft);
+}
+.meta b{font-weight:500;color:var(--ink);}
+
+/* ---------- sections ---------- */
+
+section{padding:3.25rem 0;border-bottom:1px solid var(--line);}
+section:last-of-type{border-bottom:0;}
+.num{
+  display:block;font-family:var(--mono);font-size:11.5px;font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:.75rem;
+}
+h2{
+  font-size:clamp(20px,3.3vw,26px);line-height:1.22;letter-spacing:-.018em;
+  font-weight:600;margin:0 0 1rem;text-wrap:balance;
+}
+h3{font-size:15.5px;line-height:1.4;font-weight:600;margin:2.1rem 0 .6rem;}
+p{margin:0 0 1rem;max-width:64ch;text-wrap:pretty;}
+p.lead{font-size:16.5px;color:var(--ink-soft);}
+code{
+  font-family:var(--mono);font-size:.87em;background:var(--cell);
+  border:1px solid var(--line);padding:1px 5px;white-space:nowrap;
+}
+
+/* ---------- the dieline figure ---------- */
+
+figure{margin:1.5rem 0 .5rem;border:1px solid var(--line);background:var(--cell);padding:1.4rem 1.25rem 1rem;}
+figure svg{display:block;width:100%;height:auto;}
+figcaption{
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink-soft);
+  margin-top:.9rem;display:flex;flex-wrap:wrap;gap:.5rem 1.4rem;align-items:center;
+}
+.key{display:inline-flex;align-items:center;gap:.45rem;}
+.key i{display:block;width:22px;height:0;border-top:2px solid var(--ink);}
+.key i.crease{border-top:2px dashed var(--ink-mid);}
+.panel{fill:var(--board);}
+.flap{fill:var(--board-2);}
+.cutline{fill:none;stroke:var(--ink);stroke-width:1.6;}
+.creaseline{fill:none;stroke:var(--ink-mid);stroke-width:1.6;stroke-dasharray:7 5;}
+.plabel{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11px;fill:var(--ink-soft);
+  text-anchor:middle;dominant-baseline:middle;letter-spacing:.08em;
+}
+
+/* ---------- code block ---------- */
+
+pre{
+  margin:1.35rem 0 .5rem;padding:1.1rem 1.2rem;background:var(--cell);
+  border:1px solid var(--line);overflow-x:auto;font-family:var(--mono);
+  font-size:12.5px;line-height:1.55;color:var(--ink-soft);
+}
+pre b{color:var(--ink);font-weight:600;}
+pre .c{color:var(--ink-soft);}
+
+/* ---------- tables ---------- */
+
+.scroller{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;margin:1.35rem 0 .5rem;font-size:14px;}
+caption{
+  text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-soft);padding-bottom:.65rem;
+}
+th{
+  text-align:left;font-family:var(--mono);font-size:10.5px;font-weight:500;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);
+  padding:0 .9rem .5rem 0;border-bottom:1px solid var(--line);
+}
+td{padding:.7rem .9rem .7rem 0;border-bottom:1px solid var(--line);vertical-align:top;}
+td:last-child,th:last-child{padding-right:0;}
+td.k{font-family:var(--mono);font-size:12.5px;color:var(--ink);white-space:nowrap;}
+
+/* ---------- flow ---------- */
+
+.flow{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);margin:1.35rem 0 .5rem;}
+.flow-step{
+  background:var(--cell);padding:.95rem 1.1rem;display:grid;
+  grid-template-columns:24px 1fr;gap:1rem;align-items:start;
+}
+.flow-step i{font-family:var(--mono);font-style:normal;font-size:11px;color:var(--ink-soft);padding-top:3px;}
+.flow-step div{font-size:14px;color:var(--ink-soft);}
+.flow-step b{color:var(--ink);font-weight:600;}
+
+/* ---------- callout ---------- */
+
+.note{
+  border-top:1px solid var(--ink);border-bottom:1px solid var(--line);
+  padding:1.1rem 0 1.2rem;margin:1.6rem 0 .5rem;
+}
+.note p{margin:0;max-width:60ch;font-size:14.5px;color:var(--ink-soft);}
+.note b{color:var(--ink);font-weight:600;}
+
+/* ---------- footer ---------- */
+
+footer{
+  padding:2.75rem 0 5rem;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--ink-soft);
+}
+footer p{max-width:60ch;margin:0 0 .5rem;}
+footer a{text-decoration:none;border-bottom:1px solid var(--line);}
+footer a:hover{color:var(--ink);}
+
+@media (max-width:640px){
+  section{padding:2.5rem 0;}
+  .plabel{font-size:14px;}
+}
+@media (prefers-reduced-motion:reduce){ *{transition-duration:.01ms !important;} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<a class="home" href="/" aria-label="Sea of Grass — all studies">
+  <svg viewBox="43.63 44.56 350.94 258.56" fill="currentColor" aria-hidden="true">
+    <path d="M 60.1360,299.5890 C 40.8560,283.5000 37.9720,248.8600 54.1230,229.1250 C 61.9590,219.4780 73.2066,213.0913 85.9080,212.4050 L 279.9170,212.3880 C 292.7328,211.6894 302.2259,200.5242 302.6140,188.1740 C 303.0171,175.3461 294.1087,163.3937 280.9850,162.4350 L 160.3860,162.3770 C 155.6830,162.3750 152.4580,158.1300 152.2660,154.1930 C 152.0640,150.0420 155.5000,145.5160 160.3230,145.5160 L 323.2740,145.5180 C 363.5090,146.7569 394.2264,180.5210 394.5670,220.2810 C 394.9023,259.4236 360.4620,297.7100 320.2520,299.1580 C 320.2520,299.1580 69.9310,307.7640 60.1360,299.5890 Z"/>
+    <path d="M 365.1390,47.9780 C 360.1170,47.5130 354.1470,47.1080 347.4230,46.7550 C 274.7440,42.9430 114.0820,45.2510 114.0820,45.2510 C 73.9994,46.9759 43.7290,80.8860 43.6260,120.3040 C 43.5230,159.4680 73.5199,193.9418 113.3820,195.4730 L 277.3270,195.8440 C 282.2870,195.8440 285.7460,192.0070 285.9600,187.6500 C 286.1670,183.4310 282.8680,178.9500 277.9760,178.9480 L 158.2750,178.9140 C 145.3037,178.2644 135.8119,166.8014 135.6040,154.2420 C 135.3960,141.6768 144.3477,129.9059 157.2620,128.9900 L 350.1640,128.8050 C 352.3160,128.8030 354.4280,128.6110 356.4990,128.2740 C 366.7370,126.6070 375.8830,121.0490 382.8160,113.4590 C 390.0330,105.5580 394.4238,95.7293 394.5320,85.6870 C 394.7250,67.7708 381.6430,52.8390 365.1390,47.9780 Z"/>
+    <circle cx="357.983" cy="86.686" r="36.548"/>
+  </svg>
+</a>
+
+<header class="top">
+  <p class="kicker">Study 04 · Packfold</p>
+  <h1>A toy that is also a cutting file</h1>
+  <p class="standfirst">A folding carton built out of ordinary page elements rather than 3D geometry — and the same numbers that fold it on screen will write out a CAD dieline you can open in Illustrator and cut. These are the notes on how, and on why that matters.</p>
+  <div class="meta">
+    <span><b>Runs on</b> DOM + CSS 3D</span>
+    <span><b>3D library</b> none</span>
+    <span><b>Exports</b> ASCII DXF, 2 layers</span>
+    <span><b>Sheet</b> 20.48 &times; 10 in</span>
+  </div>
+</header>
+
+<div class="demo">
+  <div class="demo-frame">
+    <iframe src="./packfold.html" title="Packfold — fold the carton, paint it, export the dieline" loading="eager"></iframe>
+  </div>
+  <div class="demo-cap">
+    <span>Live — drag flat to folded, then press .DXF</span>
+    <a href="./packfold.html" target="_blank" rel="noopener">Open full size &#8599;</a>
+  </div>
+</div>
+
+<main>
+
+<section>
+  <span class="num">01 — The premise</span>
+  <h2>One description, three readings</h2>
+  <p class="lead">A dieline is an unusual kind of drawing. It is a picture, a set of instructions for a machine, and a description of an object that does not exist yet — all in the same marks.</p>
+  <p>Printers keep those three readings in separate files: artwork here, cut file there, a render for the client somewhere else. They drift. The version that got cut is not quite the version that got approved.</p>
+  <p>This piece collapses them. There is one geometry. Folded, it is the object. Flat, it is the drawing. Exported, it is the instruction. Change the description and all three change together, because there is only ever one of them.</p>
+</section>
+
+<section>
+  <span class="num">02 — The carton</span>
+  <h2>Thirteen divs, hinged the way board folds</h2>
+  <p>There is no 3D library here and no canvas. Every panel of the carton is a plain element, and each is positioned as a child of the panel it folds off — front, then the side off the front, then the back off the side, then the left, then the glue flap. Tuck, dust and bottom flaps hang off their own walls.</p>
+  <p>That nesting is not a convenience. It is the same parent-child chain the board has: fold the front and everything attached to it comes along. Because the browser already composes nested transforms, the hierarchy does the work that a scene graph would otherwise have to.</p>
+
+  <figure>
+    <svg viewBox="-16 -78 544 282" role="img" aria-label="Flat dieline of a tuck-end carton: thirteen panels with cut lines and crease lines marked">
+      <g>
+        <rect class="panel" x="0" y="0" width="150" height="130"/>
+        <rect class="panel" x="150" y="0" width="95" height="130"/>
+        <rect class="panel" x="245" y="0" width="150" height="130"/>
+        <rect class="panel" x="395" y="0" width="95" height="130"/>
+        <rect class="flap"  x="490" y="0" width="22" height="130"/>
+        <rect class="flap"  x="11" y="-62" width="128" height="62"/>
+        <rect class="flap"  x="164" y="-40" width="66" height="40"/>
+        <rect class="flap"  x="245" y="-18" width="150" height="18"/>
+        <rect class="flap"  x="409" y="-40" width="66" height="40"/>
+        <rect class="flap"  x="0" y="130" width="150" height="58"/>
+        <rect class="flap"  x="150" y="130" width="95" height="58"/>
+        <rect class="flap"  x="245" y="130" width="150" height="58"/>
+        <rect class="flap"  x="395" y="130" width="95" height="58"/>
+      </g>
+      <g class="cutline">
+        <rect x="0" y="0" width="150" height="130"/><rect x="150" y="0" width="95" height="130"/>
+        <rect x="245" y="0" width="150" height="130"/><rect x="395" y="0" width="95" height="130"/>
+        <rect x="490" y="0" width="22" height="130"/>
+        <rect x="11" y="-62" width="128" height="62"/><rect x="164" y="-40" width="66" height="40"/>
+        <rect x="245" y="-18" width="150" height="18"/><rect x="409" y="-40" width="66" height="40"/>
+        <rect x="0" y="130" width="150" height="58"/><rect x="150" y="130" width="95" height="58"/>
+        <rect x="245" y="130" width="150" height="58"/><rect x="395" y="130" width="95" height="58"/>
+      </g>
+      <g class="creaseline">
+        <path d="M150 0V130M245 0V130M395 0V130M490 0V130"/>
+        <path d="M11 0H139M164 0H230M245 0H395M409 0H475"/>
+        <path d="M0 130H150M150 130H245M245 130H395M395 130H490"/>
+      </g>
+      <g class="plabel">
+        <text x="75" y="65">FRONT</text><text x="197" y="65">R</text>
+        <text x="320" y="65">BACK</text><text x="442" y="65">L</text>
+        <text x="75" y="-31">TUCK</text><text x="75" y="159">BOTTOM</text><text x="320" y="159">BOTTOM</text>
+      </g>
+    </svg>
+    <figcaption>
+      <span class="key"><i></i> cut</span>
+      <span class="key"><i class="crease"></i> crease</span>
+      <span>13 panels · 20.48 × 10 in at 25px to the inch</span>
+    </figcaption>
+  </figure>
+  <p>The drawing above is not a screenshot. It is the same thirteen rectangles and twelve crease segments the carton above uses, drawn from the same numbers the exporter reads — which is the whole argument of the piece, made once in miniature.</p>
+</section>
+
+<section>
+  <span class="num">03 — The fold</span>
+  <h2>One number closes the box</h2>
+  <p>A single progress value from 0 to 1 drives everything. Each hinge turns from its flat angle to its finished one — 90° for a wall, −90° for a flap, −105° for the tuck that goes past vertical and into the box.</p>
+  <p>Hinges do not all move together. Each lags by how deep it sits in the chain, so the carton assembles outward-in the way hands would do it: the front comes up, then the side, then the back, then the flaps fold over what is already standing. The lag is one term in one line of arithmetic, and it is the difference between a box inflating and a box being built.</p>
+
+  <h3>Light without lighting</h3>
+  <p>With no renderer there is no shading, and an unshaded white box reads as a flat shape. Rather than tint each face's own colour — which would fight the paint tools — every panel carries a transparent black overlay whose opacity is set by which way that face ends up pointing. Front clear, back a whisper, sides a little more, flaps most. The form survives being painted any colour, or having a photograph wrapped over it.</p>
+</section>
+
+<section>
+  <span class="num">04 — Ink and artwork</span>
+  <h2>The sheet accepts print</h2>
+  <p>Under the carton is a strip of inks. Choosing one and clicking a panel fills it; a fill-all button floods the box. Because the shading is an overlay rather than the panel's colour, a red carton still catches the light.</p>
+  <p>Uploading an image does something more interesting than stamping a picture on the front. The image is sized to the whole flat sheet once, then each panel takes it at that same size with its own offset — so the artwork is registered across the net exactly as a printed sheet is, and when the box folds, the picture wraps the corners because it was never divided in the first place.</p>
+</section>
+
+<section>
+  <span class="num">05 — The export</span>
+  <h2>The same geometry, written for a machine</h2>
+  <p class="lead">Everything above is a toy. The button marked <code>.DXF</code> is what makes it a study.</p>
+  <p>DXF is a plain-text CAD format, old and stubborn and universally readable: a list of entities, each one a stack of numbered group codes. Writing one needs no library — a few hundred bytes of string building.</p>
+
+  <div class="flow">
+    <div class="flow-step"><i>01</i><div>Take the thirteen panel rectangles and the twelve crease segments — <b>the same numbers that lay out the page</b>.</div></div>
+    <div class="flow-step"><i>02</i><div>Emit every crease on a <b>CREASE</b> layer. These are scored, not cut.</div></div>
+    <div class="flow-step"><i>03</i><div>For each panel edge, <b>subtract the creases lying along it</b> and emit only what remains to a <b>CUT</b> layer — so a shared wall is scored once rather than cut twice.</div></div>
+    <div class="flow-step"><i>04</i><div>Flip Y. Screens count downward; CAD counts up.</div></div>
+    <div class="flow-step"><i>05</i><div>Divide by 25 — the sheet is drawn at <b>25px to the inch</b>, so the file comes out in real inches.</div></div>
+  </div>
+
+  <p>Step 3 is the one that matters. A naïve export draws every rectangle and hands the machine a file where every interior wall is cut twice — which would cut the carton into thirteen loose pieces. Splitting each edge around its creases is a few lines of interval arithmetic and the difference between a file that looks right and a file that is right.</p>
+
+  <h3>What comes out</h3>
+  <div class="scroller">
+    <table>
+      <caption>usdg-tuck-carton-dieline.dxf</caption>
+      <thead><tr><th>Property</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Size</td><td>3,196 bytes — 744 lines of plain text</td></tr>
+        <tr><td class="k">Entities</td><td>46 <code>LINE</code></td></tr>
+        <tr><td class="k">Layers</td><td>34 on <code>CUT</code>, 12 on <code>CREASE</code></td></tr>
+        <tr><td class="k">Extents</td><td>0 → 20.48 in wide, 0 → 10 in tall</td></tr>
+        <tr><td class="k">Units</td><td>inches, at 25px = 1 in</td></tr>
+        <tr><td class="k">Dependencies</td><td>none — built with string concatenation</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>The first entity in the file is the crease between the front panel and the right wall — a vertical line at 6 inches, running from 7.52 down to 2.32:</p>
+<pre>0
+SECTION
+2
+ENTITIES
+0
+LINE
+8
+<b>CREASE</b>
+10
+<b>6.0000</b>   <span class="c">← x1</span>
+20
+<b>7.5200</b>   <span class="c">← y1</span>
+30
+0.0
+11
+<b>6.0000</b>   <span class="c">← x2</span>
+21
+<b>2.3200</b>   <span class="c">← y2</span>
+31
+0.0
+<span class="c">… 45 more entities …</span>
+0
+ENDSEC
+0
+EOF</pre>
+
+  <div class="note">
+    <p><b>That is a real carton.</b> 6 inches between creases is the front panel width; 5.2 inches of travel is the box height. Open the file in Illustrator and the layers arrive named, the cut lines are cut lines, and the dimensions are the dimensions. Nothing was traced, measured or redrawn — it fell out of the same description that folds the toy.</p>
+  </div>
+
+  <p style="margin-top:1.4rem"><a href="./usdg-tuck-carton-dieline.dxf" download>Download the exported dieline</a> — 3,196 bytes, or press <code>.DXF</code> above and make your own.</p>
+</section>
+
+<section>
+  <span class="num">06 — What it argues</span>
+  <h2>The drawing was never separate from the thing</h2>
+  <p>The interesting part is not that a browser can fold a box. It is that the distance between a thing you play with and a file a machine can cut turned out to be about forty lines of arithmetic.</p>
+  <p>Design work has spent a long time treating those as different disciplines with different tools and different file formats, mediated by people who translate between them. Most of that translation is not judgement. It is bookkeeping — and bookkeeping is exactly what a computer will do for free if the description is honest enough to be read more than one way.</p>
+  <p>What this piece tests is whether a single description can carry all the way from something a visitor pokes at to something a flatbed cutter will accept. It can. The version you folded and the version that gets cut are the same version, because there is only one.</p>
+  <p>Which suggests the useful question is not whether the tools can do this. It is which other pairs of "separate" artefacts are actually one description wearing two hats.</p>
+</section>
+
+</main>
+
+<footer>
+  <p>Study 04. The carton began as the hero of the US Display Group case study at tristan.design and was lifted out to run on its own. The page above is the reference implementation.</p>
+  <p><a href="/">← All studies</a></p>
+</footer>
+
+</div>
+
+</body>
+</html>
